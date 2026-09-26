@@ -1,3 +1,0 @@
-deepeval>=0.24
-pytest>=8.3
-httpx>=0.28

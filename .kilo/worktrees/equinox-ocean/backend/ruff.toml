@@ -1,7 +1,0 @@
-[lint]
-# B008: FastAPI convention (Depends() in defaults).
-# BLE001: deliberate broad excepts around LLM/vector call sites (no-fallback design).
-ignore = ["B008", "BLE001"]
-
-[lint.per-file-ignores]
-"tests/*" = ["S101"]

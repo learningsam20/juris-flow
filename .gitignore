@@ -113,3 +113,6 @@ eval/promptfoo/.cache/
 
 # Editor / sync duplicate conflict copies
 * [0-9][0-9]-[0-9][0-9]-*.*
+
+# Kilo agent worktrees (local clones — never commit)
+.kilo/worktrees/

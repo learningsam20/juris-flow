@@ -1,6 +1,0 @@
-# Optional cloud adapters for production configurations only.
-# Default dev setup uses Ollama + Qdrant local mode and does NOT need these.
-google-cloud-aiplatform>=1.70
-google-cloud-storage>=2.18
-google-genai>=1.0
-psycopg2-binary>=2.9.9
