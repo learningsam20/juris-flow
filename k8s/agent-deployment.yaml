@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jurisflow-agent
+  namespace: jurisflow
+  labels:
+    app: jurisflow
+    component: agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jurisflow
+      component: agent
+  template:
+    metadata:
+      labels:
+        app: jurisflow
+        component: agent
+    spec:
+      containers:
+        - name: agent
+          image: jurisflow/agent:latest
+          ports:
+            - containerPort: 5607
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: jurisflow-config
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5607
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 5607
+            initialDelaySeconds: 5
+            periodSeconds: 10

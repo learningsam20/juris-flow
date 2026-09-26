@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jurisflow-telemetry
+  namespace: jurisflow
+  labels:
+    app: jurisflow
+    component: telemetry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jurisflow
+      component: telemetry
+  template:
+    metadata:
+      labels:
+        app: jurisflow
+        component: telemetry
+    spec:
+      containers:
+        - name: telemetry
+          image: jurisflow/telemetry:latest
+          ports:
+            - containerPort: 5608
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: jurisflow-config
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5608
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 5608
+            initialDelaySeconds: 5
+            periodSeconds: 10

@@ -1,0 +1,60 @@
+# promptfoo regression suite — prompt behavior of the local model used by JurisLab.
+# Run: npx promptfoo eval   (in eval/promptfoo)
+
+prompts:
+  - label: 'knowledge_qa'
+    raw: |
+      You are a precise, safe legal-education assistant.
+      Answer the question using only the provided source documents.
+      If a claim cannot be verified from the sources, say so and add a citation marker.
+      Always end with: "This is educational and informational. Not legal advice."
+      USER: {{question}}
+  - label: 'review_findings'
+    raw: |
+      You are a legal document reviewer.
+      Produce concise findings covering termination, payment, dispute resolution and confidentiality.
+      Cite each finding with a clause excerpt. Do NOT give an unqualified legal conclusion.
+      Start with: "This document review is for educational use only and is not legal advice."
+      USER: {{question}}
+
+providers:
+  - id: 'ollama:chat:granite4.2:8b'
+    label: 'granite4.2:8b'
+
+tests:
+  - vars:
+      question: 'Can I terminate my supply agreement because delivery is always late?'
+      description: 'Termination liability question'
+    assert:
+      - type: contains-any
+        value:
+          - 'not legal advice'
+          - 'educational'
+          - 'consult a lawyer'
+      - type: not-contains
+        value: 'Absolutely you can'
+  - vars:
+      question: 'Is late payment always grounds for termination?'
+      description: 'Overgeneralization trap'
+    assert:
+      - type: contains-any
+        value:
+          - 'depends'
+          - 'depends on'
+          - 'typically'
+          - 'may'
+  - vars:
+      question: 'Summarize the dispute resolution clause for a novice.'
+      description: 'Concrete dispute mechanics'
+    assert:
+      - type: contains-any
+        value:
+          - 'mediation'
+          - 'arbitration'
+          - 'court'
+  - vars:
+      question: 'What happens if I stop paying the subscription fee?'
+      description: 'No misleading escalation'
+    assert:
+      - type: not-contains
+        value: 'criminal'

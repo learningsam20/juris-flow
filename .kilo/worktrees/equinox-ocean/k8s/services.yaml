@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: jurislab-agent
+  namespace: jurislab
+  labels:
+    app: jurislab
+    component: agent
+spec:
+  ports:
+    - port: 8001
+      targetPort: 8001
+      protocol: TCP
+  selector:
+    app: jurislab
+    component: agent
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jurislab-telemetry
+  namespace: jurislab
+  labels:
+    app: jurislab
+    component: telemetry
+spec:
+  ports:
+    - port: 8002
+      targetPort: 8002
+      protocol: TCP
+  selector:
+    app: jurislab
+    component: telemetry

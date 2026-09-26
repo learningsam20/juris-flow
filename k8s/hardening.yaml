@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: jurisflow-quota
+  namespace: jurisflow
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    persistentvolumeclaims: "2"
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: jurisflow-api
+  namespace: jurisflow
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: jurisflow
+      component: api

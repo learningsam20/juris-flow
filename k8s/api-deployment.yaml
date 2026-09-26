@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jurisflow-api
+  namespace: jurisflow
+  labels:
+    app: jurisflow
+    component: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: jurisflow
+      component: api
+  template:
+    metadata:
+      labels:
+        app: jurisflow
+        component: api
+    spec:
+      containers:
+        - name: api
+          image: jurisflow/api:latest
+          ports:
+            - containerPort: 5606
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: jurisflow-config
+          env:
+            - name: PORT
+              value: "5606"
+            - name: JAIL_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jurisflow-secrets
+                  key: JAIL_SECRET_KEY
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5606
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 5606
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: jurisflow-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jurisflow-api
+  namespace: jurisflow
+  labels:
+    app: jurisflow
+    component: api
+spec:
+  ports:
+    - port: 5606
+      targetPort: 5606
+      protocol: TCP
+  selector:
+    app: jurisflow
+    component: api

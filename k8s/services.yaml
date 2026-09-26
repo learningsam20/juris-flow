@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: jurisflow-agent
+  namespace: jurisflow
+  labels:
+    app: jurisflow
+    component: agent
+spec:
+  ports:
+    - port: 5607
+      targetPort: 5607
+      protocol: TCP
+  selector:
+    app: jurisflow
+    component: agent
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jurisflow-telemetry
+  namespace: jurisflow
+  labels:
+    app: jurisflow
+    component: telemetry
+spec:
+  ports:
+    - port: 5608
+      targetPort: 5608
+      protocol: TCP
+  selector:
+    app: jurisflow
+    component: telemetry

@@ -1,0 +1,224 @@
+{
+  "jurisflow": {
+    "roles": {
+      "modules": [
+        "sim",
+        "review",
+        "hub",
+        "analytics",
+        "settings",
+        "dashboard"
+      ],
+      "module_roles": {
+        "sim": [
+          "sim_educator",
+          "sim_professional",
+          "sim_student",
+          "sim_researcher"
+        ],
+        "review": [
+          "review_lead",
+          "review_analyst",
+          "review_viewer"
+        ],
+        "hub": [
+          "knowledge_curator",
+          "knowledge_consumer",
+          "knowledge_analyst"
+        ]
+      },
+      "platform_roles": [
+        "platform_admin",
+        "org_admin",
+        "billing_admin"
+      ],
+      "permissions": {
+        "sim": {
+          "scenario.view": [
+            "sim_educator",
+            "sim_professional",
+            "sim_student"
+          ],
+          "scenario.create": [
+            "sim_educator"
+          ],
+          "scenario.edit": [
+            "sim_educator"
+          ],
+          "scenario.publish": [
+            "sim_educator"
+          ],
+          "scenario.version": [
+            "sim_educator"
+          ],
+          "simulation.run": [
+            "sim_educator",
+            "sim_professional",
+            "sim_student"
+          ],
+          "simulation.observe": [
+            "sim_educator",
+            "sim_professional",
+            "sim_student"
+          ],
+          "case_study.view": [
+            "sim_educator",
+            "sim_professional",
+            "sim_student",
+            "sim_researcher"
+          ],
+          "case_study.publish": [
+            "sim_educator"
+          ],
+          "case_study.export": [
+            "sim_educator",
+            "sim_professional"
+          ],
+          "sim.data.view": [
+            "sim_researcher"
+          ]
+        },
+        "review": {
+          "document.upload": [
+            "review_lead",
+            "review_analyst"
+          ],
+          "review.run": [
+            "review_lead",
+            "review_analyst"
+          ],
+          "review.annotate": [
+            "review_lead",
+            "review_analyst"
+          ],
+          "review.publish": [
+            "review_lead"
+          ],
+          "review.template.config": [
+            "review_lead"
+          ],
+          "report.view": [
+            "review_lead",
+            "review_analyst",
+            "review_viewer"
+          ],
+          "report.export": [
+            "review_lead"
+          ]
+        },
+        "hub": {
+          "knowledge.ingest": [
+            "knowledge_curator"
+          ],
+          "knowledge.edit": [
+            "knowledge_curator"
+          ],
+          "knowledge.search": [
+            "knowledge_consumer",
+            "knowledge_curator",
+            "knowledge_analyst"
+          ],
+          "collection.manage": [
+            "knowledge_curator"
+          ],
+          "insights.view": [
+            "knowledge_analyst"
+          ]
+        },
+        "dashboard": {
+          "dashboard.view": [
+            "sim_educator",
+            "sim_professional",
+            "sim_student",
+            "sim_researcher",
+            "review_lead",
+            "review_analyst",
+            "review_viewer",
+            "knowledge_consumer",
+            "knowledge_curator",
+            "knowledge_analyst"
+          ]
+        },
+        "analytics": {
+          "analytics.view": [
+            "sim_researcher",
+            "review_lead",
+            "knowledge_analyst"
+          ]
+        },
+        "settings": {
+          "settings.view": [
+            "sim_educator",
+            "review_lead",
+            "knowledge_curator"
+          ]
+        }
+      },
+      "agent_tools": {
+        "orchestrator": [
+          "scenario.loader",
+          "simulation.state_manager",
+          "case_study.generator"
+        ],
+        "plaintiff": [
+          "knowledge.retriever",
+          "scenario.dossier_retriever",
+          "citation.formatter",
+          "fact.validator"
+        ],
+        "defendant": [
+          "knowledge.retriever",
+          "scenario.dossier_retriever",
+          "citation.formatter",
+          "fact.validator"
+        ],
+        "judge": [
+          "knowledge.retriever",
+          "scenario.dossier_retriever",
+          "issue.extractor",
+          "outcome.template"
+        ],
+        "informer": [
+          "scenario.dossier_retriever",
+          "terminology.explainer",
+          "plain_language.rewriter",
+          "resource.linker"
+        ],
+        "witness": [
+          "scenario.dossier_retriever",
+          "expert.retriever"
+        ],
+        "review_analyst": [
+          "document.parser",
+          "clause.extractor",
+          "risk.scorer",
+          "summary.generator"
+        ]
+      },
+      "agent_modules": {
+        "orchestrator": [
+          "sim"
+        ],
+        "plaintiff": [
+          "sim"
+        ],
+        "defendant": [
+          "sim"
+        ],
+        "judge": [
+          "sim"
+        ],
+        "informer": [
+          "sim",
+          "review"
+        ],
+        "witness": [
+          "sim"
+        ],
+        "review_analyst": [
+          "review"
+        ]
+      }
+    }
+  }
+}

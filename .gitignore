@@ -1,0 +1,95 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+**/site-packages/
+
+# Virtual envs
+.venv/
+eval/*/.venv/
+venv/
+ENV/
+env/
+
+# Test / tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Node
+node_modules/
+frontend/dist/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+*.pem
+
+# Console / runtime artifacts
+backend/server.log
+frontend/frontend.log
+frontend/vite.log
+
+# Runtime data (generated, never committed)
+backend/data/
+data/
+*.db
+*.sqlite3
+*.pid
+
+# Audio / media test & generated artifacts
+*.aiff
+*.mp3
+*.wav
+*.m4a
+-.aiff
+
+# Scratch & temporary scripts
+scratch/
+**/scratch/
+scratch*.py
+**/scratch*.py
+temp_*.py
+
+# Local KB & KM source material (large third-party test PDFs & artefacts)
+km/
+**/km/
+*.pdf
+
+# Firebase hosting cache & local configs
+.firebase/
+
+# Promptfoo / eval output
+eval/promptfoo/output/
+eval/promptfoo/.cache/
+
+# OS / editor
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+.idea/
+.vscode/
+
+# Editor / sync duplicate conflict copies
+* [0-9][0-9]-[0-9][0-9]-*.*
