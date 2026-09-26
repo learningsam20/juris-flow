@@ -1,95 +1,108 @@
-# JurisFlow — Educational Legal Simulation & Document Review Platform
+# JurisFlow
 
-Multi-agent legal simulation, grounded document review, and a knowledge hub with
-OPA/Rego-enforced authorization. **Educational only — nothing here is legal advice.**
+Enterprise legal intelligence — **knowledge hub**, **grounded contract review**,
+**multi-agent tribunal simulation**, **training pack + audio**, and **risk insights**.
 
-## Quick start (local dev)
+OPA/Rego default-deny. Local-first LLM with cloud adapters when you need them.
 
-Prerequisites: Python 3.14, Node 20+ (for the frontend), [Ollama](https://ollama.com) running
-with a chat model (`llama3.2:latest` default, `gemma4:latest` for Ask AI) and an embedding
-model (`all-minilm`).
+> **Educational only — not legal advice.**
+
+<p align="center">
+  <img src="docs/images/dashboard.png" alt="JurisFlow dashboard — KM-grounded risk insights" width="860" />
+</p>
+
+<p align="center">
+  <img src="docs/images/login.png" alt="JurisFlow login" width="860" />
+</p>
+
+## What you get
+
+| Capability | Notes |
+|---|---|
+| Enterprise knowledge hub | Artefacts indexed · hybrid search · Ask AI |
+| Grounded review | KM-confirmed findings · manual-review residuals |
+| Fleet of agents | Policy Reviewer · Plaintiff · Defendant · Judge · Informer · Witness |
+| Tribunal simulation | LangGraph · HITL · turn budget · case study |
+| Training pack | Dual-track TTS (overview + hearing) |
+| Risk insights | Practice intelligence · KPIs |
+
+## Quick start
+
+Prerequisites: Python 3.14, Node 20+, [Ollama](https://ollama.com) with a chat model
+(`llama3.2:latest` default) and embeddings (`all-minilm`).
 
 ```bash
-make install                 # create .venv + install backend deps
-make seed                    # seed admin@jurisflow.dev / ChangeMe#2026 + sample org/scenario/doc
-make start                   # backend on :5600 (+ Vite frontend on :5601 when built)
-open http://127.0.0.1:5600/api/v1/health
+make install                 # .venv + backend deps
+make seed                    # admin@jurisflow.dev / ChangeMe#2026
+make start                   # API :5600 · Vite :5601
+open http://127.0.0.1:5601
 ```
+
+Showcase deck (in-app): **Showcase** nav · `/#/showcase`
 
 ## Configuration
 
-All configuration is `.env`-driven with the `JAIL_` prefix
-(copy `.env.example` → `backend/.env`). Key settings:
+`.env` with `JAIL_` prefix (copy `.env.example` → `backend/.env`):
 
 | Area | Default | Notes |
-| --- | --- | --- |
-| LLM | Ollama `llama3.2:latest` | `JAIL_ASK_LLM_MODEL=gemma4:latest` for grounded Q&A; `JAIL_LLM_PROVIDER=vertex` for GenAI; **no fallback** |
-| Embeddings | Ollama `all-minilm` (384d) | `JAIL_EMBEDDING_PROVIDER=vertex` |
-| Vector store | Qdrant embedded local | `JAIL_VECTOR_PROVIDER=vertex` or `JAIL_QDRANT_URL` for a server |
-| DB | SQLite `data/jurisflow.db` | `JAIL_DATABASE_URL` for Postgres |
-| Policy | Embedded OPA engine | `JAIL_OPA_URL` to use a real OPA server |
+|---|---|---|
+| LLM | Ollama `llama3.2:latest` | Adapters: Ollama (private) · OpenRouter/Vertex (cloud per use-case) · **no silent fallback** |
+| Embeddings | Ollama `all-minilm` | `JAIL_EMBEDDING_PROVIDER` |
+| Vector store | Qdrant embedded | `JAIL_QDRANT_URL` / Vertex optional |
+| TTS | edge-tts | Overview + multi-voice hearing |
+| DB | SQLite | Postgres via `JAIL_DATABASE_URL` |
+| Policy | Embedded OPA | `JAIL_OPA_URL` for external OPA |
 
 ## Workflows
 
-- **Simulations**: scenario → shared fact pattern → `POST /api/v1/simulations` runs the
-  LangGraph orchestrator (Plaintiff/Defendant/Judge ± Informer/Witness). Human-in-the-loop:
-  pause/resume, inject facts, ask for clarification, steer focus. After N litigant exchanges
-  the LLM-as-judge rules on the winner (`JAIL_SIM_JUDGE_EFFORT`, `JAIL_SIM_JUDGE_MAX_ROUNDS`).
-  Case study generated on completion and exportable as Markdown.
-- **Review**: upload a document (PDF/DOCX/TXT/MD; scanned image PDFs are OCR'd via Tesseract)
-  → chunked, embedded, indexed → review job extracts clauses/risk, produces a report, grounded
-  Q&A over the document, publish/export.
-- **Knowledge hub**: hybrid semantic + keyword search with org/jurisdiction/domain filters,
-  curated collections and teaching packs, AI-augmented insights, and "Ask AI" grounded Q&A
-  (dedicated `JAIL_ASK_LLM_MODEL`, low temperature, citations to the source passages).
-- **Analytics**: usage KPIs (simulations, reviews, searches, exports) + agent telemetry.
+- **Simulations** — scenario → LangGraph agents → HITL (pause / inject / steer) → verdict → case study + audio
+- **Review** — upload → extract → KM-grounded findings → publish / export
+- **Knowledge hub** — hybrid search · collections · Ask AI with citations
+- **Analytics** — usage KPIs · agent telemetry
 
-## Auth & Authorization
+## Auth & authorization
 
-Form-based registration/login with short-lived JWT access + refresh rotation. Role model:
-platform roles (`org_admin`, `platform_admin`, `billing_admin`) and module roles
-(`sim.sim_educator`, `dashboard.reviewer`, …). Every operation (including MCP tool calls,
-A2A messages, and exports) is authorized by the OPA/Rego policy packs in `policies/` —
-default deny.
+JWT access + refresh. Platform + module roles. Every API / MCP / A2A / export call
+goes through Rego — **default deny**.
 
 ## Repo layout
 
 ```
-backend/     FastAPI + LangGraph + SQLAlchemy + providers (Ollama/Vertex/Qdrant)
-frontend/    React + Vite + MUI + Zustand
-policies/    OPA/Rego authorization policies (+ data + tests)
-eval/        DeepEval + promptfoo suites
-scripts/     start.sh / stop.sh / kill_all_and_start.sh
-infra/       Docker + Kubernetes manifests
-docs/        requirements, architecture, threat model, acceptance, OpenAPI
+backend/     FastAPI + LangGraph + SQLAlchemy + LLM/TTS adapters
+frontend/    React + Vite + MUI · public/showcase/
+policies/    OPA/Rego (+ tests)
+eval/        DeepEval + promptfoo
+scripts/     start / stop / remake
+infra/       Docker + Kubernetes
+docs/        architecture · tech-architecture · threat model · acceptance
 ```
 
 ## Docs
 
-- `docs/architecture.md` — component + runtime topology (Mermaid), key flows, config surface
-- `docs/threat-model.md` — assets, trust boundaries, threats ⇄ mitigations, known gaps
-- `docs/acceptance.md` — walkthrough against PRD §12 / §15.8 acceptance criteria
-- `docs/openapi.json` — generated OpenAPI contract (44 paths) for the `/api/v1` surface
-- `eval/README.md` — evaluation guide and reproducible `make eval` commands
+- [`docs/architecture.md`](docs/architecture.md) — component topology · flows · config
+- [`docs/tech-architecture.md`](docs/tech-architecture.md) — tech bets · LLM routing · agents
+- [`docs/threat-model.md`](docs/threat-model.md) — trust boundaries
+- [`docs/acceptance.md`](docs/acceptance.md) — acceptance walkthrough
+- [`docs/openapi.json`](docs/openapi.json) — OpenAPI contract
+- [`docs/proposition.md`](docs/proposition.md) — presentation notes
+- [`eval/README.md`](eval/README.md) — `make eval`
 
 ## Verification
 
 ```bash
-make test          # backend pytest + rego policy tests
+make test          # backend pytest + Rego
 make lint          # ruff
 make typecheck     # mypy
-make eval          # DeepEval + promptfoo (requires live API + Ollama)
+make eval          # DeepEval + promptfoo (live API + Ollama)
 ```
 
 ## Assumptions & limitations
 
-- Local Ollama latency is hardware-bound; simulations on small models can take seconds
-  per turn and occasional empty responses degrade (not fail) a single turn.
-- OCR is fully integrated (Tesseract + pypdfium2 for image-only PDFs); malware scanning is
-  still a placeholder hook (see PRD §5.2).
-- Auth/upload/simulation/review/export endpoints are rate-limited via an in-memory
-  sliding window (`JAIL_RATE_LIMIT_ENABLED`); move to Redis or the edge for multi-instance.
-- SQLite is for dev only; Postgres is the production target (see docker-compose).
+- Local Ollama latency is hardware-bound; small models may yield thinner turns.
+- OCR via Tesseract for image PDFs; malware scan is a placeholder hook.
+- In-memory rate limits — use Redis/edge for multi-instance.
+- SQLite is for but; Postgres is the production target.
 
 ---
+
 JurisFlow output is **educational and informational, not legal advice**.

@@ -3,336 +3,333 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>JurisFlow — Final Presentation</title>
+  <title>JurisFlow — Showcase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --ink: #0e1a2b;
-      --muted: #5a6b7d;
-      --line: #d4dde8;
-      --accent: #0c6b6b;
-      --accent-2: #1a5f8a;
-      --accent-3: #5b3d7a;
-      --soft: #e8f4f4;
-      --paper: #f4f1eb;
-      --card: #ffffff;
-      --shadow: 0 20px 60px rgba(14, 26, 43, 0.1);
+      --bg: #070b14;
+      --panel: #0e1524;
+      --panel-2: #121b2e;
+      --ink: #eef3fa;
+      --muted: #8494a8;
+      --line: rgba(238, 243, 250, 0.09);
+      --accent: #3d9cf0;
+      --green: #2fd67b;
+      --amber: #e8b84a;
+      --violet: #9b7bff;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
     body {
-      font-family: "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
       color: var(--ink);
       background:
-        radial-gradient(ellipse 80% 50% at 0% 0%, #d5e8e8 0%, transparent 55%),
-        radial-gradient(ellipse 70% 45% at 100% 100%, #e6ddd2 0%, transparent 50%),
-        var(--paper);
+        radial-gradient(ellipse 55% 40% at 100% 0%, rgba(61,156,240,0.1), transparent 55%),
+        radial-gradient(ellipse 40% 30% at 0% 100%, rgba(47,214,123,0.06), transparent 50%),
+        var(--bg);
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
     }
 
-    /* —— chrome —— */
     header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
-      padding: 1rem 1.75rem 0.85rem;
-      border-bottom: 1px solid rgba(212, 221, 232, 0.85);
-      background: rgba(255, 255, 255, 0.72);
-      backdrop-filter: blur(10px);
+      padding: 0.75rem 1.5rem;
+      border-bottom: 1px solid var(--line);
+      background: rgba(7, 11, 20, 0.92);
+      backdrop-filter: blur(12px);
       position: sticky;
       top: 0;
       z-index: 20;
+      flex-shrink: 0;
     }
-    .brand {
-      display: flex;
-      align-items: baseline;
-      gap: 0.65rem;
-      min-width: 0;
-    }
+    .brand { display: flex; align-items: baseline; gap: 0.7rem; }
     .brand strong {
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: 1.35rem;
-      font-weight: 500;
+      font-family: "Source Serif 4", Georgia, serif;
+      font-size: 1.25rem;
+      font-weight: 600;
       letter-spacing: -0.02em;
     }
-    .brand span {
-      font-size: 0.78rem;
+    .brand em {
+      font-style: normal;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.65rem;
       color: var(--muted);
-      letter-spacing: 0.04em;
-      white-space: nowrap;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
     }
-    nav {
-      display: flex;
-      gap: 0.35rem;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
+    nav { display: flex; gap: 0.1rem; }
     nav button {
       appearance: none;
-      border: 1px solid transparent;
+      border: 0;
       background: transparent;
       color: var(--muted);
       font: inherit;
-      font-size: 0.86rem;
-      padding: 0.55rem 0.95rem;
-      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 0.5rem 0.85rem;
       cursor: pointer;
-      transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
     }
-    nav button:hover {
-      color: var(--ink);
-      background: rgba(255, 255, 255, 0.85);
-      border-color: var(--line);
-    }
-    nav button.active {
-      color: #fff;
-      background: var(--accent);
-      border-color: var(--accent);
-      box-shadow: 0 6px 18px rgba(12, 107, 107, 0.28);
-    }
+    nav button:hover { color: var(--ink); }
+    nav button.active { color: var(--ink); border-bottom-color: var(--accent); }
     nav button .n {
-      display: inline-block;
-      width: 1.15rem;
-      height: 1.15rem;
-      line-height: 1.15rem;
-      text-align: center;
-      border-radius: 50%;
-      font-size: 0.7rem;
-      font-weight: 700;
-      margin-right: 0.35rem;
-      background: rgba(255, 255, 255, 0.22);
-    }
-    nav button:not(.active) .n {
-      background: var(--soft);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.65rem;
       color: var(--accent);
+      margin-right: 0.35rem;
     }
 
     main {
       flex: 1;
       display: flex;
-      align-items: stretch;
-      justify-content: center;
-      padding: 1.5rem 1.25rem 2rem;
+      min-height: 0;
+      padding: 1rem 1.25rem 0.75rem;
     }
     .panel {
       display: none;
-      width: min(1120px, 100%);
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      box-shadow: var(--shadow);
-      padding: 2.4rem 2.75rem 2.1rem;
-      animation: rise 0.35s ease;
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      height: 100%;
+      animation: in 0.25s ease;
     }
-    .panel.active { display: block; }
-    @keyframes rise {
-      from { opacity: 0; transform: translateY(10px); }
+    .panel.active { display: flex; flex-direction: column; }
+    @keyframes in {
+      from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: none; }
     }
 
-    .eyebrow {
-      font-size: 0.72rem;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: var(--accent);
-      font-weight: 700;
-      margin-bottom: 0.55rem;
-    }
-    h1 {
-      font-family: Georgia, "Times New Roman", serif;
-      font-weight: 500;
-      font-size: clamp(1.7rem, 3vw, 2.45rem);
-      line-height: 1.18;
-      letter-spacing: -0.02em;
-      margin-bottom: 0.55rem;
-      max-width: 22ch;
-    }
-    .lede {
-      color: var(--muted);
-      font-size: 1.02rem;
-      line-height: 1.45;
-      max-width: 54ch;
-      margin-bottom: 1.6rem;
-    }
-
-    /* —— slide 1 —— */
-    .quad {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.95rem;
-    }
-    .cell {
-      border: 1px solid var(--line);
-      border-left: 3px solid var(--accent);
-      background: linear-gradient(145deg, var(--soft), #fff);
-      padding: 1.15rem 1.2rem;
-      min-height: 7.8rem;
-      border-radius: 6px;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .cell:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 28px rgba(14, 26, 43, 0.07);
-    }
-    .cell h2 {
-      font-size: 0.7rem;
+    .kicker {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.68rem;
       letter-spacing: 0.14em;
       text-transform: uppercase;
       color: var(--accent);
-      margin-bottom: 0.45rem;
+      margin-bottom: 0.4rem;
+      flex-shrink: 0;
     }
-    .cell p { font-size: 1.02rem; line-height: 1.4; }
-    .outcome {
-      margin-top: 1.5rem;
-      padding: 1rem 1.15rem;
-      border-top: 1px solid var(--line);
-      font-size: 1.05rem;
-      color: var(--muted);
-      font-style: italic;
+    h1 {
+      font-family: "Source Serif 4", Georgia, serif;
+      font-weight: 600;
+      font-size: clamp(1.5rem, 2.6vw, 2.15rem);
+      letter-spacing: -0.025em;
+      line-height: 1.12;
+      margin-bottom: 1rem;
+      flex-shrink: 0;
     }
-    .outcome strong { color: var(--ink); font-style: normal; }
 
-    /* —— shared viz frames —— */
-    .viz {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background:
-        linear-gradient(180deg, #fafcfc 0%, #f0f5f5 100%);
-      margin-bottom: 1.35rem;
-      overflow: hidden;
-    }
-    .viz svg { display: block; width: 100%; height: auto; }
-
-    .cols-2 {
+    /* —— Slide 1: full-bleed quadrants —— */
+    .quad {
+      flex: 1;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1.25rem;
+      grid-template-rows: 1fr 1fr;
+      gap: 0.7rem;
+      min-height: 0;
     }
-    .cols-2 h2, .lanes h2, .lane h2 {
-      font-size: 0.7rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 0.55rem;
+    .quad .card {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      padding: 1.35rem 1.45rem;
     }
-    .cols-2 ul, .lane ul { list-style: none; }
-    .cols-2 li, .lane li {
-      font-size: 0.94rem;
-      line-height: 1.35;
-      padding: 0.38rem 0;
-      border-bottom: 1px solid #e8eef3;
+    .quad .card ul {
+      flex: 1;
+      justify-content: center;
+      gap: 0.65rem;
     }
-    .cols-2 li strong, .lane li strong { color: var(--ink); }
+    .quad .card li {
+      font-size: clamp(1rem, 1.6vw, 1.25rem);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
 
-    /* —— slide 3 —— */
-    .beats {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0.8rem;
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      padding: 1rem 1.1rem;
       position: relative;
-      margin-bottom: 1.25rem;
     }
-    .beats::before {
+    .card::before {
       content: "";
       position: absolute;
-      top: 1.55rem;
-      left: 10%;
-      right: 10%;
+      top: 0; left: 0; right: 0;
       height: 2px;
-      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
-      z-index: 0;
-    }
-    .beat {
-      position: relative;
-      z-index: 1;
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 1.1rem 1rem 1.2rem;
-      min-height: 11rem;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .beat:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 12px 30px rgba(14, 26, 43, 0.08);
-    }
-    .num {
-      width: 2rem;
-      height: 2rem;
-      border-radius: 50%;
       background: var(--accent);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.88rem;
-      font-weight: 700;
-      margin-bottom: 0.8rem;
     }
-    .beat:nth-child(2) .num { background: #148080; }
-    .beat:nth-child(3) .num { background: var(--accent-2); }
-    .beat:nth-child(4) .num { background: var(--accent-3); }
-    .beat h2 {
-      font-family: Georgia, serif;
-      font-size: 1.08rem;
+    .card.g::before { background: var(--green); }
+    .card.a::before { background: var(--amber); }
+    .card.v::before { background: var(--violet); }
+
+    .card h2 {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.68rem;
       font-weight: 500;
-      text-transform: none;
-      letter-spacing: 0;
-      color: var(--ink);
-      margin-bottom: 0.4rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.85rem;
     }
-    .beat p { font-size: 0.9rem; line-height: 1.4; color: var(--muted); }
-    .hint {
-      padding: 0.9rem 1.1rem;
-      background: var(--soft);
-      border-left: 3px solid var(--accent);
-      border-radius: 0 6px 6px 0;
+    .card ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .card li {
       font-size: 0.95rem;
+      font-weight: 500;
+      line-height: 1.25;
+      padding-left: 0.9rem;
+      position: relative;
+    }
+    .card li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.45em;
+      width: 5px;
+      height: 5px;
+      background: var(--accent);
+    }
+    .card.g li::before { background: var(--green); }
+    .card.a li::before { background: var(--amber); }
+    .card.v li::before { background: var(--violet); }
+
+    .meta {
+      flex-shrink: 0;
+      margin-top: 0.75rem;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
     }
 
-    /* —— slide 4 —— */
-    .lanes {
+    /* —— Architecture —— */
+    .arch-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      min-height: 0;
+    }
+    .viz {
+      flex: 1.15;
+      min-height: 220px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      overflow: hidden;
+      display: flex;
+    }
+    .viz svg { width: 100%; height: 100%; }
+
+    .bets {
+      flex: 0.85;
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 0.7rem;
+      min-height: 0;
+    }
+    .bet-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+    .bet-table th {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.62rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: left;
+      padding: 0.35rem 0.5rem 0.55rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .bet-table td {
+      padding: 0.45rem 0.5rem;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      line-height: 1.3;
+      font-weight: 500;
+    }
+    .bet-table tr:last-child td { border-bottom: 0; }
+    .bet-table td:first-child { color: var(--accent); font-family: "IBM Plex Mono", monospace; font-size: 0.72rem; white-space: nowrap; }
+    .bet-table .not {
+      color: var(--muted);
+      font-weight: 400;
+      text-decoration: line-through;
+      text-decoration-color: rgba(132,148,168,0.45);
+    }
+
+    /* —— Roadmap —— */
+    .road {
+      flex: 1;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 0.85rem;
+      gap: 0.7rem;
+      min-height: 0;
     }
-    .lane {
+    .road .card {
+      display: flex;
+      flex-direction: column;
+    }
+    .road .card ul {
+      flex: 1;
+      gap: 0.55rem;
+      justify-content: flex-start;
+    }
+    .road .card li {
+      font-size: clamp(0.95rem, 1.35vw, 1.1rem);
+      font-weight: 600;
+    }
+    .badge {
+      display: inline-block;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.45rem;
+      margin-bottom: 0.65rem;
+      border: 1px solid currentColor;
+    }
+    .badge.now { color: var(--green); }
+    .badge.near { color: var(--amber); }
+    .badge.far { color: var(--violet); }
+
+    .timeline {
+      flex-shrink: 0;
+      height: 72px;
+      margin-bottom: 0.7rem;
+      background: var(--panel-2);
       border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 1rem 1.05rem;
-      min-height: 9rem;
-      background: #fff;
     }
-    .lane.now { border-top: 3px solid var(--accent); }
-    .lane.near { border-top: 3px solid var(--accent-2); }
-    .lane.far { border-top: 3px solid var(--accent-3); }
-    .lane.near h2 { color: var(--accent-2); }
-    .lane.far h2 { color: var(--accent-3); }
-    .lane h3 {
-      font-family: Georgia, serif;
-      font-size: 1.05rem;
-      font-weight: 500;
-      margin-bottom: 0.45rem;
-    }
-    .lane li { color: var(--muted); border: none; padding: 0.22rem 0; }
-    .lane li::before { content: "→ "; opacity: 0.4; color: var(--ink); }
+    .timeline svg { width: 100%; height: 100%; display: block; }
 
     footer {
+      flex-shrink: 0;
       text-align: center;
-      padding: 0 1rem 1.25rem;
-      font-size: 0.78rem;
+      padding: 0.45rem 1rem 0.7rem;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.6rem;
       color: var(--muted);
+      letter-spacing: 0.08em;
     }
 
-    @media (max-width: 880px) {
-      header { flex-direction: column; align-items: flex-start; }
-      .panel { padding: 1.6rem 1.25rem; }
-      .quad, .cols-2, .beats, .lanes { grid-template-columns: 1fr; }
-      .beats::before { display: none; }
-      h1 { max-width: none; }
+    @media (max-width: 900px) {
+      .quad, .road, .bets { grid-template-columns: 1fr; grid-template-rows: auto; }
+      .quad { overflow: auto; }
+      main { height: auto; }
+      .panel.active { height: auto; }
     }
   </style>
 </head>
@@ -340,317 +337,291 @@
   <header>
     <div class="brand">
       <strong>JurisFlow</strong>
-      <span>Enterprise AI · Final presentation</span>
+      <em>Enterprise AI</em>
     </div>
     <nav role="tablist" aria-label="Slides">
-      <button type="button" class="active" data-tab="problem" role="tab" aria-selected="true"><span class="n">1</span>Problem</button>
-      <button type="button" data-tab="architecture" role="tab" aria-selected="false"><span class="n">2</span>Architecture</button>
-      <button type="button" data-tab="demo" role="tab" aria-selected="false"><span class="n">3</span>Demo</button>
-      <button type="button" data-tab="roadmap" role="tab" aria-selected="false"><span class="n">4</span>Roadmap</button>
+      <button type="button" class="active" data-tab="problem" role="tab" aria-selected="true"><span class="n">01</span>Problem</button>
+      <button type="button" data-tab="architecture" role="tab" aria-selected="false"><span class="n">02</span>Architecture</button>
+      <button type="button" data-tab="roadmap" role="tab" aria-selected="false"><span class="n">03</span>Roadmap</button>
     </nav>
   </header>
 
   <main>
     <!-- ========== 1 PROBLEM ========== -->
     <section id="problem" class="panel active" role="tabpanel">
-      <p class="eyebrow">Slide 1 · Why this problem</p>
-      <h1>Enterprise legal work still runs on scarce experts.</h1>
-      <p class="lede">Theme: enterprise AI — where proprietary knowledge, high stakes, and human judgment must stay in the loop.</p>
+      <p class="kicker">01 · Problem</p>
+      <h1>Scale judgment. Don’t burn SMEs on repetition.</h1>
       <div class="quad">
-        <div class="cell">
+        <article class="card">
           <h2>Need</h2>
-          <p>Review contracts, train juniors, stay current on policy — at speed and scale.</p>
-        </div>
-        <div class="cell">
-          <h2>Challenge</h2>
-          <p>SMEs are the bottleneck: insights are manual, inconsistent, slow; repetition burns judgment time.</p>
-        </div>
-        <div class="cell">
-          <h2>Why enterprise AI</h2>
-          <p>Proprietary knowledge, high stakes, HITL required — legal KM is the natural fit.</p>
-        </div>
-        <div class="cell">
-          <h2>What we chose</h2>
-          <p>Own the firm’s knowledge; automate grounded audits and immersive tribunal training around it.</p>
-        </div>
+          <ul>
+            <li>Scale</li>
+            <li>Efficiency</li>
+            <li>Policy currency</li>
+          </ul>
+        </article>
+        <article class="card a">
+          <h2>Challenges</h2>
+          <ul>
+            <li>SME bandwidth</li>
+            <li>Fast onboarding</li>
+            <li>Agentified HITL CLM flow</li>
+          </ul>
+        </article>
+        <article class="card g">
+          <h2>Why enterprise</h2>
+          <ul>
+            <li>Proprietary knowledge</li>
+            <li>High-stakes decisions</li>
+            <li>Data privacy</li>
+          </ul>
+        </article>
+        <article class="card v">
+          <h2>What we built</h2>
+          <ul>
+            <li>Enterprise knowledge hub</li>
+            <li>Grounded review</li>
+            <li>Fleet of agents</li>
+            <li>Tribunal simulation</li>
+            <li>Training pack</li>
+            <li>Risk insights</li>
+          </ul>
+        </article>
       </div>
-      <p class="outcome"><strong>Outcome:</strong> free SME bandwidth for judgment — scale review and rehearsal without waiting on experts.</p>
     </section>
 
     <!-- ========== 2 ARCHITECTURE ========== -->
     <section id="architecture" class="panel" role="tabpanel" hidden>
-      <p class="eyebrow">Slide 2 · How it works</p>
-      <h1>System architecture</h1>
-      <p class="lede">Policy-gated API, knowledge hub, grounded review, and LangGraph agents — LLM adapters swap without lock-in.</p>
+      <p class="kicker">02 · Architecture</p>
+      <h1>Agents · policy gate · right model for the job</h1>
 
-      <div class="viz" aria-hidden="false">
-        <svg viewBox="0 0 1000 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="JurisFlow system architecture diagram">
-          <defs>
-            <marker id="arr" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
-              <path d="M0,0 L7,3.5 L0,7 Z" fill="#7a8fa3"/>
-            </marker>
-            <linearGradient id="gNode" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#154056"/>
-              <stop offset="100%" stop-color="#0f2c3d"/>
-            </linearGradient>
-            <filter id="softShadow" x="-10%" y="-10%" width="120%" height="130%">
-              <feDropShadow dx="0" dy="3" stdDeviation="3" flood-opacity="0.12"/>
-            </filter>
-          </defs>
+      <div class="arch-wrap">
+        <div class="viz">
+          <svg viewBox="0 0 1100 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="JurisFlow architecture with agent fleet">
+            <defs>
+              <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6" fill="none" stroke="#3d9cf0" stroke-width="1.2"/>
+              </marker>
+            </defs>
 
-          <!-- soft lanes -->
-          <rect x="20" y="20" width="160" height="280" rx="10" fill="#eef6f6" opacity="0.7"/>
-          <rect x="200" y="20" width="200" height="280" rx="10" fill="#f3f6f9" opacity="0.8"/>
-          <rect x="420" y="20" width="280" height="280" rx="10" fill="#eef6f6" opacity="0.7"/>
-          <rect x="720" y="20" width="260" height="280" rx="10" fill="#f3f6f9" opacity="0.8"/>
+            <text x="70" y="22" fill="#8494a8" font-size="10" font-family="IBM Plex Mono,monospace" letter-spacing="1.5">CLIENT</text>
+            <text x="250" y="22" fill="#8494a8" font-size="10" font-family="IBM Plex Mono,monospace" letter-spacing="1.5">CONTROL</text>
+            <text x="520" y="22" fill="#8494a8" font-size="10" font-family="IBM Plex Mono,monospace" letter-spacing="1.5">WORKLOADS</text>
+            <text x="780" y="22" fill="#8494a8" font-size="10" font-family="IBM Plex Mono,monospace" letter-spacing="1.5">AGENT FLEET</text>
+            <text x="1000" y="22" fill="#8494a8" font-size="10" font-family="IBM Plex Mono,monospace" letter-spacing="1.5">MODELS</text>
+            <line x1="30" y1="32" x2="1070" y2="32" stroke="rgba(238,243,250,0.08)"/>
 
-          <text x="100" y="42" text-anchor="middle" fill="#5a6b7d" font-size="11" font-family="Segoe UI,sans-serif" letter-spacing="1.5">CLIENT</text>
-          <text x="300" y="42" text-anchor="middle" fill="#5a6b7d" font-size="11" font-family="Segoe UI,sans-serif" letter-spacing="1.5">CONTROL PLANE</text>
-          <text x="560" y="42" text-anchor="middle" fill="#5a6b7d" font-size="11" font-family="Segoe UI,sans-serif" letter-spacing="1.5">WORKLOADS</text>
-          <text x="850" y="42" text-anchor="middle" fill="#5a6b7d" font-size="11" font-family="Segoe UI,sans-serif" letter-spacing="1.5">INTELLIGENCE</text>
+            <!-- Client -->
+            <rect x="30" y="130" width="100" height="50" fill="#0e1524" stroke="#3d9cf0"/>
+            <text x="80" y="152" text-anchor="middle" fill="#eef3fa" font-size="13" font-family="IBM Plex Sans,sans-serif" font-weight="600">React</text>
+            <text x="80" y="168" text-anchor="middle" fill="#8494a8" font-size="10" font-family="IBM Plex Mono,monospace">UI</text>
+            <line x1="130" y1="155" x2="175" y2="155" stroke="#3d9cf0" stroke-width="1.2" marker-end="url(#arr)"/>
 
-          <!-- UI -->
-          <g filter="url(#softShadow)">
-            <rect x="45" y="120" width="110" height="58" rx="8" fill="#0c6b6b"/>
-            <text x="100" y="145" text-anchor="middle" fill="#fff" font-size="14" font-family="Segoe UI,sans-serif" font-weight="600">React UI</text>
-            <text x="100" y="163" text-anchor="middle" fill="#c8eaea" font-size="11" font-family="Segoe UI,sans-serif">Vite · MUI</text>
-          </g>
-          <line x1="155" y1="149" x2="230" y2="149" stroke="#7a8fa3" stroke-width="1.6" marker-end="url(#arr)"/>
+            <!-- Control -->
+            <rect x="180" y="115" width="120" height="80" fill="#0e1524" stroke="rgba(238,243,250,0.2)"/>
+            <text x="240" y="145" text-anchor="middle" fill="#eef3fa" font-size="13" font-family="IBM Plex Sans,sans-serif" font-weight="600">FastAPI</text>
+            <text x="240" y="163" text-anchor="middle" fill="#8494a8" font-size="10" font-family="IBM Plex Mono,monospace">JWT · tenancy</text>
+            <text x="240" y="180" text-anchor="middle" fill="#8494a8" font-size="10" font-family="IBM Plex Mono,monospace">MCP gateway</text>
 
-          <!-- API + OPA -->
-          <g filter="url(#softShadow)">
-            <rect x="235" y="112" width="130" height="74" rx="8" fill="url(#gNode)"/>
-            <text x="300" y="140" text-anchor="middle" fill="#fff" font-size="14" font-family="Segoe UI,sans-serif" font-weight="600">FastAPI</text>
-            <text x="300" y="160" text-anchor="middle" fill="#a8c4d8" font-size="11" font-family="Segoe UI,sans-serif">JWT · tenancy</text>
-          </g>
-          <g filter="url(#softShadow)">
-            <rect x="250" y="55" width="100" height="40" rx="6" fill="#1a4a5c" stroke="#0c6b6b" stroke-width="1.5"/>
-            <text x="300" y="80" text-anchor="middle" fill="#e8f4f4" font-size="12" font-family="Segoe UI,sans-serif">OPA / Rego</text>
-          </g>
-          <line x1="300" y1="112" x2="300" y2="95" stroke="#7a8fa3" stroke-width="1.4" marker-end="url(#arr)"/>
+            <rect x="195" y="55" width="90" height="34" fill="#070b14" stroke="#2fd67b"/>
+            <text x="240" y="76" text-anchor="middle" fill="#2fd67b" font-size="11" font-family="IBM Plex Mono,monospace">OPA/Rego</text>
+            <line x1="240" y1="115" x2="240" y2="89" stroke="#2fd67b" stroke-width="1.2"/>
 
-          <!-- fan-out -->
-          <line x1="365" y1="149" x2="445" y2="149" stroke="#7a8fa3" stroke-width="1.6"/>
-          <line x1="445" y1="80" x2="445" y2="250" stroke="#7a8fa3" stroke-width="1.4"/>
-          <line x1="445" y1="90" x2="470" y2="90" stroke="#7a8fa3" stroke-width="1.5" marker-end="url(#arr)"/>
-          <line x1="445" y1="149" x2="470" y2="149" stroke="#7a8fa3" stroke-width="1.5" marker-end="url(#arr)"/>
-          <line x1="445" y1="230" x2="470" y2="230" stroke="#7a8fa3" stroke-width="1.5" marker-end="url(#arr)"/>
+            <line x1="300" y1="155" x2="350" y2="155" stroke="#3d9cf0" stroke-width="1.2"/>
+            <line x1="350" y1="70" x2="350" y2="280" stroke="#3d9cf0" stroke-width="1"/>
+            <line x1="350" y1="80" x2="380" y2="80" stroke="#3d9cf0" stroke-width="1.2" marker-end="url(#arr)"/>
+            <line x1="350" y1="145" x2="380" y2="145" stroke="#3d9cf0" stroke-width="1.2" marker-end="url(#arr)"/>
+            <line x1="350" y1="210" x2="380" y2="210" stroke="#3d9cf0" stroke-width="1.2" marker-end="url(#arr)"/>
+            <line x1="350" y1="270" x2="380" y2="270" stroke="#3d9cf0" stroke-width="1.2" marker-end="url(#arr)"/>
 
-          <g filter="url(#softShadow)">
-            <rect x="475" y="62" width="165" height="56" rx="8" fill="#e8f4f4" stroke="#0c6b6b"/>
-            <text x="557" y="85" text-anchor="middle" fill="#0e1a2b" font-size="13" font-family="Segoe UI,sans-serif" font-weight="600">Knowledge Hub</text>
-            <text x="557" y="103" text-anchor="middle" fill="#5a6b7d" font-size="11" font-family="Segoe UI,sans-serif">ingest · hybrid search</text>
-          </g>
-          <g filter="url(#softShadow)">
-            <rect x="475" y="121" width="165" height="56" rx="8" fill="#e8f4f4" stroke="#0c6b6b"/>
-            <text x="557" y="144" text-anchor="middle" fill="#0e1a2b" font-size="13" font-family="Segoe UI,sans-serif" font-weight="600">Contract Review</text>
-            <text x="557" y="162" text-anchor="middle" fill="#5a6b7d" font-size="11" font-family="Segoe UI,sans-serif">grounded findings</text>
-          </g>
-          <g filter="url(#softShadow)">
-            <rect x="475" y="202" width="165" height="56" rx="8" fill="#e8f4f4" stroke="#0c6b6b"/>
-            <text x="557" y="225" text-anchor="middle" fill="#0e1a2b" font-size="13" font-family="Segoe UI,sans-serif" font-weight="600">LangGraph Sim</text>
-            <text x="557" y="243" text-anchor="middle" fill="#5a6b7d" font-size="11" font-family="Segoe UI,sans-serif">agents · HITL · A2A</text>
-          </g>
+            <!-- Workloads -->
+            <rect x="385" y="55" width="150" height="48" fill="#0e1524" stroke="rgba(238,243,250,0.18)"/>
+            <text x="460" y="75" text-anchor="middle" fill="#eef3fa" font-size="12" font-family="IBM Plex Sans,sans-serif" font-weight="600">Knowledge Hub</text>
+            <text x="460" y="92" text-anchor="middle" fill="#8494a8" font-size="10" font-family="IBM Plex Mono,monospace">ingest · RAG</text>
 
-          <!-- intelligence -->
-          <line x1="640" y1="90" x2="755" y2="90" stroke="#7a8fa3" stroke-width="1.4" marker-end="url(#arr)"/>
-          <line x1="640" y1="149" x2="720" y2="175" stroke="#7a8fa3" stroke-width="1.4" marker-end="url(#arr)"/>
-          <line x1="640" y1="230" x2="720" y2="210" stroke="#7a8fa3" stroke-width="1.4" marker-end="url(#arr)"/>
+            <rect x="385" y="121" width="150" height="48" fill="#0e1524" stroke="rgba(238,243,250,0.18)"/>
+            <text x="460" y="141" text-anchor="middle" fill="#eef3fa" font-size="12" font-family="IBM Plex Sans,sans-serif" font-weight="600">Grounded Review</text>
+            <text x="460" y="158" text-anchor="middle" fill="#8494a8" font-size="10" font-family="IBM Plex Mono,monospace">Policy Reviewer</text>
 
-          <g filter="url(#softShadow)">
-            <ellipse cx="840" cy="90" rx="78" ry="34" fill="url(#gNode)"/>
-            <text x="840" y="86" text-anchor="middle" fill="#fff" font-size="13" font-family="Segoe UI,sans-serif" font-weight="600">Qdrant</text>
-            <text x="840" y="103" text-anchor="middle" fill="#a8c4d8" font-size="10" font-family="Segoe UI,sans-serif">filtered vectors</text>
-          </g>
-          <g filter="url(#softShadow)">
-            <rect x="745" y="155" width="110" height="44" rx="7" fill="#1a4a5c"/>
-            <text x="800" y="182" text-anchor="middle" fill="#e8f4f4" font-size="12" font-family="Segoe UI,sans-serif">MCP · tools</text>
-          </g>
-          <g filter="url(#softShadow)">
-            <rect x="760" y="230" width="180" height="58" rx="8" fill="#0c6b6b"/>
-            <text x="850" y="255" text-anchor="middle" fill="#fff" font-size="13" font-family="Segoe UI,sans-serif" font-weight="600">LLM adapters</text>
-            <text x="850" y="273" text-anchor="middle" fill="#c8eaea" font-size="11" font-family="Segoe UI,sans-serif">Ollama ↔ Vertex</text>
-          </g>
-          <line x1="855" y1="195" x2="855" y2="230" stroke="#7a8fa3" stroke-width="1.3" stroke-dasharray="4 3"/>
-          <line x1="840" y1="124" x2="840" y2="230" stroke="#7a8fa3" stroke-width="1.2" stroke-dasharray="4 3"/>
-        </svg>
-      </div>
+            <rect x="385" y="186" width="150" height="48" fill="#0e1524" stroke="#3d9cf0"/>
+            <text x="460" y="206" text-anchor="middle" fill="#eef3fa" font-size="12" font-family="IBM Plex Sans,sans-serif" font-weight="600">LangGraph Sim</text>
+            <text x="460" y="223" text-anchor="middle" fill="#8494a8" font-size="10" font-family="IBM Plex Mono,monospace">HITL · A2A</text>
 
-      <div class="cols-2">
-        <div>
-          <h2>AI in the loop</h2>
-          <ul>
-            <li><strong>RAG</strong> — KM + dossiers ground review, Ask AI, sim turns</li>
-            <li><strong>Agents</strong> — plaintiff / defendant / judge; LLM-as-judge verdict</li>
-            <li><strong>Generate</strong> — remediations, case studies, dual-track TTS</li>
-          </ul>
+            <rect x="385" y="250" width="150" height="42" fill="#0e1524" stroke="#e8b84a"/>
+            <text x="460" y="268" text-anchor="middle" fill="#eef3fa" font-size="12" font-family="IBM Plex Sans,sans-serif" font-weight="600">edge-tts</text>
+            <text x="460" y="283" text-anchor="middle" fill="#e8b84a" font-size="10" font-family="IBM Plex Mono,monospace">overview · hearing</text>
+
+            <!-- Agent fleet -->
+            <line x1="535" y1="145" x2="590" y2="145" stroke="#3d9cf0" stroke-width="1.2" marker-end="url(#arr)"/>
+            <line x1="535" y1="210" x2="590" y2="210" stroke="#3d9cf0" stroke-width="1.2" marker-end="url(#arr)"/>
+            <rect x="595" y="48" width="175" height="268" fill="#121b2e" stroke="rgba(238,243,250,0.12)"/>
+            <text x="682" y="68" text-anchor="middle" fill="#8494a8" font-size="10" font-family="IBM Plex Mono,monospace" letter-spacing="1">AGENT FLEET</text>
+
+            <rect x="615" y="80" width="135" height="26" fill="#0e1524" stroke="#3d9cf0"/>
+            <text x="682" y="97" text-anchor="middle" fill="#eef3fa" font-size="11" font-family="IBM Plex Sans,sans-serif">Orchestrator</text>
+
+            <rect x="615" y="112" width="135" height="26" fill="#0e1524" stroke="#9b7bff"/>
+            <text x="682" y="129" text-anchor="middle" fill="#eef3fa" font-size="11" font-family="IBM Plex Sans,sans-serif">Policy Reviewer</text>
+
+            <rect x="615" y="144" width="135" height="26" fill="#0e1524" stroke="rgba(238,243,250,0.2)"/>
+            <text x="682" y="161" text-anchor="middle" fill="#eef3fa" font-size="11" font-family="IBM Plex Sans,sans-serif">Plaintiff</text>
+
+            <rect x="615" y="176" width="135" height="26" fill="#0e1524" stroke="rgba(238,243,250,0.2)"/>
+            <text x="682" y="193" text-anchor="middle" fill="#eef3fa" font-size="11" font-family="IBM Plex Sans,sans-serif">Defendant</text>
+
+            <rect x="615" y="208" width="135" height="26" fill="#0e1524" stroke="#2fd67b"/>
+            <text x="682" y="225" text-anchor="middle" fill="#eef3fa" font-size="11" font-family="IBM Plex Sans,sans-serif">Judge</text>
+
+            <rect x="615" y="240" width="135" height="26" fill="#0e1524" stroke="rgba(238,243,250,0.2)"/>
+            <text x="682" y="257" text-anchor="middle" fill="#eef3fa" font-size="11" font-family="IBM Plex Sans,sans-serif">Informer</text>
+
+            <rect x="615" y="272" width="135" height="26" fill="#0e1524" stroke="rgba(238,243,250,0.2)"/>
+            <text x="682" y="289" text-anchor="middle" fill="#eef3fa" font-size="11" font-family="IBM Plex Sans,sans-serif">Witness</text>
+
+            <!-- Models -->
+            <line x1="770" y1="120" x2="820" y2="100" stroke="#3d9cf0" stroke-width="1" stroke-dasharray="3 3"/>
+            <line x1="770" y1="180" x2="820" y2="175" stroke="#3d9cf0" stroke-width="1" stroke-dasharray="3 3"/>
+            <line x1="770" y1="240" x2="820" y2="250" stroke="#3d9cf0" stroke-width="1" stroke-dasharray="3 3"/>
+            <line x1="535" y1="80" x2="820" y2="80" stroke="#3d9cf0" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>
+
+            <ellipse cx="920" cy="80" rx="72" ry="28" fill="#070b14" stroke="#3d9cf0"/>
+            <text x="920" y="76" text-anchor="middle" fill="#eef3fa" font-size="12" font-family="IBM Plex Sans,sans-serif" font-weight="600">Qdrant</text>
+            <text x="920" y="92" text-anchor="middle" fill="#8494a8" font-size="9" font-family="IBM Plex Mono,monospace">vectors</text>
+
+            <rect x="845" y="130" width="150" height="58" fill="#0e1524" stroke="#e8b84a"/>
+            <text x="920" y="152" text-anchor="middle" fill="#eef3fa" font-size="12" font-family="IBM Plex Sans,sans-serif" font-weight="600">Ollama</text>
+            <text x="920" y="170" text-anchor="middle" fill="#e8b84a" font-size="10" font-family="IBM Plex Mono,monospace">local · private</text>
+
+            <rect x="845" y="205" width="150" height="58" fill="#0e1524" stroke="#9b7bff"/>
+            <text x="920" y="227" text-anchor="middle" fill="#eef3fa" font-size="12" font-family="IBM Plex Sans,sans-serif" font-weight="600">OpenRouter</text>
+            <text x="920" y="245" text-anchor="middle" fill="#9b7bff" font-size="10" font-family="IBM Plex Mono,monospace">cloud · per use-case</text>
+
+            <rect x="845" y="280" width="150" height="36" fill="#0e1524" stroke="#e8b84a"/>
+            <text x="920" y="302" text-anchor="middle" fill="#e8b84a" font-size="11" font-family="IBM Plex Mono,monospace">edge-tts voices</text>
+          </svg>
         </div>
-        <div>
-          <h2>Tech bets</h2>
-          <ul>
-            <li><strong>Agnostic</strong> — Ollama ↔ Vertex via config, no lock-in</li>
-            <li><strong>FOSS</strong> — FastAPI · React · LangGraph · Qdrant · OPA</li>
-            <li><strong>Policy-first</strong> — Rego on API, MCP, exports</li>
-          </ul>
+
+        <div class="bets">
+          <article class="card" style="padding:0.75rem 0.85rem; overflow:auto;">
+            <h2 style="margin-bottom:0.5rem;">Tech bets</h2>
+            <table class="bet-table">
+              <thead>
+                <tr>
+                  <th>Rationale</th>
+                  <th>Choice</th>
+                  <th>Not selected</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>No lock-in · private vs cloud</td>
+                  <td>Ollama + OpenRouter</td>
+                  <td class="not">Single-vendor LLM</td>
+                </tr>
+                <tr>
+                  <td>HITL state · agent graph</td>
+                  <td>LangGraph</td>
+                  <td class="not">Ad-hoc chains</td>
+                </tr>
+                <tr>
+                  <td>Filtered org vectors</td>
+                  <td>Qdrant</td>
+                  <td class="not">Chroma</td>
+                </tr>
+                <tr>
+                  <td>Default-deny tenancy</td>
+                  <td>OPA / Rego</td>
+                  <td class="not">App-only RBAC</td>
+                </tr>
+                <tr>
+                  <td>Multi-voice · unbounded</td>
+                  <td>edge-tts</td>
+                  <td class="not">Cloud TTS lock-in</td>
+                </tr>
+                <tr>
+                  <td>FOSS · ship fast</td>
+                  <td>FastAPI · React</td>
+                  <td class="not">Heavyweight CLM suite</td>
+                </tr>
+              </tbody>
+            </table>
+          </article>
+          <article class="card g">
+            <h2>LLM routing</h2>
+            <ul>
+              <li>Ollama — private / offline / cost</li>
+              <li>OpenRouter — stronger models per task</li>
+              <li>Per use-case adapter switch</li>
+              <li>edge-tts — overview + hearing tracks</li>
+            </ul>
+          </article>
         </div>
       </div>
     </section>
 
-    <!-- ========== 3 DEMO ========== -->
-    <section id="demo" class="panel" role="tabpanel" hidden>
-      <p class="eyebrow">Slide 3 · Live path</p>
-      <h1>Demo in four beats</h1>
-      <p class="lede">One knowledge base trains the hearing and confirms the audit.</p>
-
-      <div class="viz">
-        <svg viewBox="0 0 1000 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <defs>
-            <linearGradient id="flow" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#0c6b6b"/>
-              <stop offset="50%" stop-color="#1a5f8a"/>
-              <stop offset="100%" stop-color="#5b3d7a"/>
-            </linearGradient>
-          </defs>
-          <path d="M70 65 H930" stroke="url(#flow)" stroke-width="3" stroke-linecap="round" opacity="0.35"/>
-          <circle cx="130" cy="65" r="18" fill="#0c6b6b"/>
-          <text x="130" y="70" text-anchor="middle" fill="#fff" font-size="13" font-family="Segoe UI,sans-serif" font-weight="700">1</text>
-          <text x="130" y="105" text-anchor="middle" fill="#0e1a2b" font-size="13" font-family="Georgia,serif">Ingest</text>
-          <circle cx="380" cy="65" r="18" fill="#148080"/>
-          <text x="380" y="70" text-anchor="middle" fill="#fff" font-size="13" font-family="Segoe UI,sans-serif" font-weight="700">2</text>
-          <text x="380" y="105" text-anchor="middle" fill="#0e1a2b" font-size="13" font-family="Georgia,serif">Audit</text>
-          <circle cx="630" cy="65" r="18" fill="#1a5f8a"/>
-          <text x="630" y="70" text-anchor="middle" fill="#fff" font-size="13" font-family="Segoe UI,sans-serif" font-weight="700">3</text>
-          <text x="630" y="105" text-anchor="middle" fill="#0e1a2b" font-size="13" font-family="Georgia,serif">Sim</text>
-          <circle cx="880" cy="65" r="18" fill="#5b3d7a"/>
-          <text x="880" y="70" text-anchor="middle" fill="#fff" font-size="13" font-family="Segoe UI,sans-serif" font-weight="700">4</text>
-          <text x="880" y="105" text-anchor="middle" fill="#0e1a2b" font-size="13" font-family="Georgia,serif">Pack</text>
-        </svg>
-      </div>
-
-      <div class="beats">
-        <div class="beat">
-          <div class="num">1</div>
-          <h2>Ingest</h2>
-          <p>Regulation/policy → <em>Knowledge Artefact</em>. Commercial contract → <em>Contract Review</em>.</p>
-        </div>
-        <div class="beat">
-          <div class="num">2</div>
-          <h2>Audit</h2>
-          <p>Run review → KM-confirmed vs manual-review → residual risk &amp; remediations.</p>
-        </div>
-        <div class="beat">
-          <div class="num">3</div>
-          <h2>Sim</h2>
-          <p>Tribunal scenario → agents argue under turn budget → verdict.</p>
-        </div>
-        <div class="beat">
-          <div class="num">4</div>
-          <h2>Pack</h2>
-          <p>Case study · practice intelligence · two audio clips (overview + hearing).</p>
-        </div>
-      </div>
-      <p class="hint">Same knowledge base trains the sim <strong>and</strong> confirms the audit.</p>
-    </section>
-
-    <!-- ========== 4 ROADMAP ========== -->
+    <!-- ========== 3 ROADMAP ========== -->
     <section id="roadmap" class="panel" role="tabpanel" hidden>
-      <p class="eyebrow">Slide 4 · Roadmap</p>
-      <h1>From rehearsal engine → living legal OS</h1>
-      <p class="lede">A closed loop: knowledge that watches itself, coaches that score humans + AI, workflows that won’t move until trust gates pass.</p>
+      <p class="kicker">03 · Roadmap</p>
+      <h1>Shipped core → gated enterprise CLM</h1>
 
-      <div class="viz">
-        <svg viewBox="0 0 1040 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="JurisFlow roadmap: Now, Near, Far">
-          <defs>
-            <linearGradient id="spine" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#0c6b6b"/>
-              <stop offset="50%" stop-color="#1a5f8a"/>
-              <stop offset="100%" stop-color="#5b3d7a"/>
-            </linearGradient>
-            <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="2.5" result="b"/>
-              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-          </defs>
-
-          <ellipse cx="520" cy="125" rx="460" ry="88" fill="none" stroke="#dde5ee" stroke-width="1.5" stroke-dasharray="6 8"/>
-          <ellipse cx="520" cy="125" rx="320" ry="58" fill="none" stroke="#d0e0e0" stroke-width="1.2" stroke-dasharray="4 7"/>
-
-          <path d="M90 125 C 230 55, 390 195, 520 125 S 810 55, 950 125"
-                fill="none" stroke="url(#spine)" stroke-width="4.5" stroke-linecap="round"/>
-
-          <g filter="url(#glow)">
-            <circle cx="170" cy="115" r="30" fill="#0c6b6b"/>
-            <text x="170" y="111" text-anchor="middle" fill="#fff" font-size="11" font-family="Segoe UI,sans-serif" font-weight="700">NOW</text>
-            <text x="170" y="126" text-anchor="middle" fill="#c8eaea" font-size="9" font-family="Segoe UI,sans-serif">shipped</text>
-          </g>
-          <rect x="65" y="160" width="210" height="68" rx="6" fill="#e8f4f4" stroke="#0c6b6b"/>
-          <text x="170" y="185" text-anchor="middle" fill="#0e1a2b" font-size="14" font-family="Georgia,serif">Rehearsal Core</text>
-          <text x="170" y="206" text-anchor="middle" fill="#5a6b7d" font-size="11" font-family="Segoe UI,sans-serif">KM · audit · sim · audio</text>
-
-          <g filter="url(#glow)">
-            <circle cx="520" cy="138" r="34" fill="#1a5f8a"/>
-            <text x="520" y="134" text-anchor="middle" fill="#fff" font-size="11" font-family="Segoe UI,sans-serif" font-weight="700">NEAR</text>
-            <text x="520" y="149" text-anchor="middle" fill="#c5dff0" font-size="9" font-family="Segoe UI,sans-serif">living loop</text>
-          </g>
-          <rect x="390" y="22" width="260" height="68" rx="6" fill="#e8f1f8" stroke="#1a5f8a"/>
-          <text x="520" y="48" text-anchor="middle" fill="#0e1a2b" font-size="14" font-family="Georgia,serif">Self-Healing Knowledge</text>
-          <text x="520" y="68" text-anchor="middle" fill="#5a6b7d" font-size="11" font-family="Segoe UI,sans-serif">watch / repair · feeds · redline</text>
-
-          <g filter="url(#glow)">
-            <circle cx="870" cy="115" r="30" fill="#5b3d7a"/>
-            <text x="870" y="111" text-anchor="middle" fill="#fff" font-size="11" font-family="Segoe UI,sans-serif" font-weight="700">FAR</text>
-            <text x="870" y="126" text-anchor="middle" fill="#e4d4f0" font-size="9" font-family="Segoe UI,sans-serif">trust OS</text>
-          </g>
-          <rect x="765" y="160" width="210" height="68" rx="6" fill="#f3eef8" stroke="#5b3d7a"/>
-          <text x="870" y="185" text-anchor="middle" fill="#0e1a2b" font-size="14" font-family="Georgia,serif">Trusted Legal OS</text>
-          <text x="870" y="206" text-anchor="middle" fill="#5a6b7d" font-size="11" font-family="Segoe UI,sans-serif">CLM · gates · dual scoring</text>
-
-          <circle cx="310" cy="78" r="4" fill="#0c6b6b" opacity="0.7"/>
-          <circle cx="690" cy="85" r="4" fill="#1a5f8a" opacity="0.7"/>
-          <circle cx="640" cy="180" r="3.5" fill="#5b3d7a" opacity="0.55"/>
+      <div class="timeline">
+        <svg viewBox="0 0 1000 72" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <line x1="80" y1="36" x2="920" y2="36" stroke="rgba(238,243,250,0.12)" stroke-width="2"/>
+          <line x1="80" y1="36" x2="320" y2="36" stroke="#2fd67b" stroke-width="3"/>
+          <circle cx="160" cy="36" r="9" fill="#2fd67b"/>
+          <circle cx="500" cy="36" r="9" fill="#e8b84a"/>
+          <circle cx="840" cy="36" r="9" fill="#9b7bff"/>
+          <text x="160" y="18" text-anchor="middle" fill="#2fd67b" font-size="10" font-family="IBM Plex Mono,monospace" letter-spacing="1">NOW</text>
+          <text x="500" y="18" text-anchor="middle" fill="#e8b84a" font-size="10" font-family="IBM Plex Mono,monospace" letter-spacing="1">NEAR</text>
+          <text x="840" y="18" text-anchor="middle" fill="#9b7bff" font-size="10" font-family="IBM Plex Mono,monospace" letter-spacing="1">FUTURE</text>
         </svg>
       </div>
 
-      <div class="lanes">
-        <div class="lane now">
-          <h2>Now · Rehearsal Core</h2>
-          <h3>What we ship today</h3>
+      <div class="road">
+        <article class="card g">
+          <span class="badge now">Now · shipped</span>
+          <h2>Rehearsal core</h2>
           <ul>
-            <li>Knowledge Hub + grounded contract review</li>
-            <li>Multi-agent tribunal + training audio</li>
-            <li>Policy-first, hyperscaler-agnostic base</li>
+            <li>Enterprise knowledge hub</li>
+            <li>Grounded review</li>
+            <li>Fleet of agents</li>
+            <li>Tribunal simulation</li>
+            <li>Training pack + audio</li>
+            <li>Risk insights</li>
           </ul>
-        </div>
-        <div class="lane near">
-          <h2>Near · Self-Healing Knowledge</h2>
-          <h3>Knowledge that refuses to rot</h3>
+        </article>
+        <article class="card a">
+          <span class="badge near">Near</span>
+          <h2>Trust loop</h2>
           <ul>
-            <li>Watch / repair KM &amp; past reviews</li>
-            <li>Subscribe to knowledge feeds</li>
-            <li>Collaborative redlines + AI watermarking</li>
+            <li>Repair AI reviews with HITL</li>
+            <li>Auto triage / routing</li>
+            <li>AI watermarking</li>
+            <li>DeepEvals</li>
           </ul>
-        </div>
-        <div class="lane far">
-          <h2>Far · Trusted Legal OS</h2>
-          <h3>Judgment with gates, not guesswork</h3>
+        </article>
+        <article class="card v">
+          <span class="badge far">Future</span>
+          <h2>Legal OS</h2>
           <ul>
-            <li>Full CLM with hard workflow gating</li>
-            <li>SME maturity gates before promotion</li>
-            <li>Human + AI response scoring</li>
+            <li>Complete CLM + CRM integration</li>
+            <li>Hard AI gating</li>
+            <li>SME maturity assessment</li>
           </ul>
-        </div>
+        </article>
       </div>
     </section>
   </main>
 
-  <footer>Educational product — not legal advice · Use ← → keys to switch slides</footer>
+  <footer>EDUCATIONAL · NOT LEGAL ADVICE · ← →</footer>
 
   <script>
     const buttons = [...document.querySelectorAll("nav button")];
     const panels = [...document.querySelectorAll(".panel")];
-    const order = ["problem", "architecture", "demo", "roadmap"];
+    const order = ["problem", "architecture", "roadmap"];
 
     function show(id) {
+      if (!order.includes(id)) id = "problem";
       buttons.forEach((b) => {
         const on = b.dataset.tab === id;
         b.classList.toggle("active", on);
@@ -666,7 +637,6 @@
     }
 
     buttons.forEach((b) => b.addEventListener("click", () => show(b.dataset.tab)));
-
     document.addEventListener("keydown", (e) => {
       const i = order.indexOf(location.hash.slice(1) || "problem");
       if (e.key === "ArrowRight" || e.key === "PageDown") {
@@ -677,9 +647,7 @@
         show(order[Math.max(0, i - 1)]);
       }
     });
-
-    const initial = order.includes(location.hash.slice(1)) ? location.hash.slice(1) : "problem";
-    show(initial);
+    show(order.includes(location.hash.slice(1)) ? location.hash.slice(1) : "problem");
   </script>
 </body>
 </html>
