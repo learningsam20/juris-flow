@@ -61,7 +61,6 @@ policies/    OPA/Rego authorization policies (+ data + tests)
 eval/        DeepEval + promptfoo suites
 scripts/     start.sh / stop.sh / kill_all_and_start.sh
 infra/       Docker + Kubernetes manifests
-.github/     CI workflows
 docs/        requirements, architecture, threat model, acceptance, OpenAPI
 ```
 

@@ -3,13 +3,9 @@
 ## Git workflow
 
 - **Single protected default branch:** `main`. All changes land via pull requests.
-- **Featuring branches:** create short-lived branches off `main`
+- **Feature branches:** create short-lived branches off `main`
   (`fix/`, `feat/`, `chore/`, `docs/` prefixes).
-- **CI gates (must be green before merge):** ruff lint + format, mypy, backend
-  pytest suite, Rego policy tests, frontend production build, dependency
-  vulnerability scan.
-- **Direct pushes to `main` are blocked** in the repo settings; the CI workflow
-  in `.github/workflows/ci.yml` runs on every push and pull request.
+- Run local checks below before opening a PR (no CI workflow in this repo).
 
 ## Local checks
 

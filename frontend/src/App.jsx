@@ -11,12 +11,21 @@ import RunDetailPage from './features/sim/RunDetailPage';
 import AnalyticsPage from './features/analytics/AnalyticsPage';
 import InsightsPage from './features/insights/InsightsPage';
 import SettingsPage from './features/settings/SettingsPage';
+import ShowcasePage from './features/showcase/ShowcasePage';
 
 export default function App() {
   return (
     <ThemeProvider>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/showcase"
+          element={
+            <Protected>
+              <ShowcasePage />
+            </Protected>
+          }
+        />
         <Route
           path="/"
           element={

@@ -25,6 +25,7 @@ import GavelIcon from '@mui/icons-material/Gavel';
 import GroupsIcon from '@mui/icons-material/Groups';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import LogoutIcon from '@mui/icons-material/Logout';
+import PresentToAllIcon from '@mui/icons-material/PresentToAll';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
 import { Link, Outlet, useLocation } from 'react-router-dom';
@@ -41,6 +42,7 @@ const NAV = [
   { label: 'Simulations', path: '/simulations', icon: GroupsIcon },
   { label: 'Analytics', path: '/analytics', icon: BarChartIcon },
   { label: 'Insights Report', path: '/insights', icon: LightbulbIcon },
+  { label: 'Showcase', path: '/showcase', icon: PresentToAllIcon },
   { label: 'Settings', path: '/settings', icon: SettingsIcon },
 ];
 

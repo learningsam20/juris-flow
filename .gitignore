@@ -23,26 +23,33 @@ env/
 .coverage.*
 htmlcov/
 coverage.xml
+.tox/
+.nox/
+.cache/
 
 # Node
 node_modules/
 frontend/dist/
+frontend/.vite/
+*.tsbuildinfo
+
+# Logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+backend/*.log
+frontend/*.log
 
 # Environment / secrets
 .env
 .env.*
 !.env.example
 *.pem
-
-# Console / runtime artifacts
-backend/server.log
-frontend/frontend.log
-frontend/vite.log
+*.key
+credentials.json
+service-account*.json
 
 # Runtime data (generated, never committed)
 backend/data/
@@ -50,13 +57,17 @@ data/
 *.db
 *.sqlite3
 *.pid
+*.lock
+!package-lock.json
+!frontend/package-lock.json
 
 # Audio / media test & generated artifacts
 *.aiff
 *.mp3
 *.wav
 *.m4a
--.aiff
+*.ogg
+*.flac
 
 # Scratch & temporary scripts
 scratch/
@@ -64,11 +75,18 @@ scratch/
 scratch*.py
 **/scratch*.py
 temp_*.py
+tmp/
+**/tmp/
+.tmp/
 
 # Local KB & KM source material (large third-party test PDFs & artefacts)
 km/
 **/km/
 *.pdf
+
+# Generated docs / SBOMs
+docs/sbom.json
+**/sbom.json
 
 # Firebase hosting cache & local configs
 .firebase/
@@ -88,8 +106,10 @@ eval/promptfoo/.cache/
 *~
 *.bak
 *.tmp
+*.temp
 .idea/
 .vscode/
+*.code-workspace
 
 # Editor / sync duplicate conflict copies
 * [0-9][0-9]-[0-9][0-9]-*.*

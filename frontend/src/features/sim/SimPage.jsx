@@ -268,9 +268,85 @@ export default function SimPage() {
   const [configScenarioFile, setConfigScenarioFile] = useState(null);
   const scenarioFileInputRef = useRef(null);
 
+  const audioPollRef = useRef(null);
   const transcriptBottomRef = useRef(null);
-  const selectedSimIdRef = useRef(selectedSimId);
-  selectedSimIdRef.current = selectedSimId;
+
+  function stopAudioPoll() {
+    if (audioPollRef.current) {
+      clearInterval(audioPollRef.current);
+      audioPollRef.current = null;
+    }
+  }
+
+  function watchAudioProgress(simId) {
+    if (!simId) return;
+    stopAudioPoll();
+    setIsSynthesizingAudio(true);
+    setAudioMsg({
+      text: 'Synthesizing audio narration in the background…',
+      severity: 'info',
+    });
+    let attempts = 0;
+    const maxAttempts = 180; // ~6 minutes at 2s
+    audioPollRef.current = setInterval(async () => {
+      attempts += 1;
+      try {
+        const auds = await api(`/simulations/${simId}/audio`);
+        const list = Array.isArray(auds) ? auds : [];
+        setAudioAssets(list);
+        const ready = list.filter((a) => a.status === 'ready' && a.url);
+        const pending = list.filter((a) => a.status === 'pending');
+        const failed = list.filter((a) => a.status === 'error');
+        const progressNote =
+          pending.map((a) => a.progress).filter(Boolean).join(' · ') ||
+          failed.map((a) => a.error).filter(Boolean).join(' · ');
+        const pct = Math.max(
+          0,
+          ...pending.map((a) => Number(a.progress_pct) || 0),
+          ready.length ? Math.round((ready.length / Math.max(list.length, 1)) * 100) : 0,
+        );
+
+        if (ready.length >= 2 || (ready.length > 0 && pending.length === 0 && failed.length === 0 && list.length > 0 && ready.length === list.length)) {
+          setAudioMsg({
+            text: `Synthesis complete: ${ready.length} audio track${ready.length === 1 ? '' : 's'} ready.`,
+            severity: 'success',
+          });
+          setIsSynthesizingAudio(false);
+          stopAudioPoll();
+        } else if (pending.length === 0 && failed.length > 0 && ready.length === 0) {
+          setAudioMsg({
+            text: `Audio synthesis failed: ${progressNote || 'unknown error'}. Click Regenerate to retry.`,
+            severity: 'error',
+          });
+          setIsSynthesizingAudio(false);
+          stopAudioPoll();
+        } else if (attempts >= maxAttempts) {
+          setAudioMsg({
+            text: 'Audio is still synthesizing. Refresh this run shortly, or click Regenerate.',
+            severity: 'warning',
+          });
+          setIsSynthesizingAudio(false);
+          stopAudioPoll();
+        } else {
+          setAudioMsg({
+            text: progressNote
+              ? `${progressNote}${pct ? ` (${pct}%)` : ''}`
+              : `Synthesizing… ${ready.length} ready, ${pending.length} in progress.`,
+            severity: 'info',
+          });
+        }
+      } catch (pollErr) {
+        if (attempts >= maxAttempts) {
+          setAudioMsg({ text: `Audio status check: ${pollErr.message}`, severity: 'warning' });
+          setIsSynthesizingAudio(false);
+          stopAudioPoll();
+        }
+      }
+    }, 2000);
+  }
+
+  useEffect(() => () => stopAudioPoll(), []);
+
 
   const loadAll = useCallback(async () => {
     try {
@@ -467,7 +543,14 @@ export default function SimPage() {
       }
       try {
         const auds = await api(`/simulations/${simId}/audio`);
-        setAudioAssets(Array.isArray(auds) ? auds : []);
+        const list = Array.isArray(auds) ? auds : [];
+        setAudioAssets(list);
+        if (list.some((a) => a.status === 'pending')) {
+          watchAudioProgress(simId);
+        } else {
+          stopAudioPoll();
+          setIsSynthesizingAudio(false);
+        }
       } catch {
         setAudioAssets([]);
       }
@@ -744,39 +827,12 @@ export default function SimPage() {
   // Generate Audio Narration for Completed Simulation
   async function handleGenerateAudio(simId) {
     if (!simId) return;
-    setIsSynthesizingAudio(true);
-    setAudioMsg({ text: 'Synthesizing high-fidelity judicial voice narration & per-role audio clips in background...', severity: 'info' });
+    setAudioMsg({ text: 'Queuing high-fidelity judicial voice narration…', severity: 'info' });
     try {
       setMsg('Synthesizing high-fidelity judicial voice narration & audio clips in background...');
       setMsgSeverity('info');
       await api(`/simulations/${simId}/audio`, { method: 'POST' });
-
-      // Poll until audio assets are ready
-      let attempts = 0;
-      const interval = setInterval(async () => {
-        attempts += 1;
-        try {
-          const auds = await api(`/simulations/${simId}/audio`);
-          if (Array.isArray(auds) && auds.length > 0) {
-            setAudioAssets(auds);
-            setAudioMsg({ text: `Synthesis complete: ${auds.length} high-fidelity audio tracks generated and ready for playback.`, severity: 'success' });
-            setMsg('Audio narration synthesis completed and available for playback.');
-            setMsgSeverity('success');
-            setIsSynthesizingAudio(false);
-            clearInterval(interval);
-          } else if (attempts >= 15) {
-            setIsSynthesizingAudio(false);
-            setAudioMsg({ text: 'Audio generation is running in background. Files will appear once synthesis finishes.', severity: 'warning' });
-            clearInterval(interval);
-          }
-        } catch (pollErr) {
-          if (attempts >= 15) {
-            setIsSynthesizingAudio(false);
-            setAudioMsg({ text: `Audio status check: ${pollErr.message}`, severity: 'warning' });
-            clearInterval(interval);
-          }
-        }
-      }, 2000);
+      watchAudioProgress(simId);
     } catch (err) {
       setIsSynthesizingAudio(false);
       const errMsg = err.message || 'Server error';

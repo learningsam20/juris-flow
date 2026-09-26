@@ -8,7 +8,7 @@ suites. Run everything below from the repo root with `.venv` active.
 make lint          # ruff check + format   → "All checks passed!"
 make typecheck     # mypy app              → "Success: no issues found"
 make test          # backend pytest + Rego → 44 + 25 passed
-(cd frontend && npm run build)   # Vite build OK (also runs in CI)
+(cd frontend && npm run build)   # Vite build OK
 ```
 
 ## §12 Acceptance Criteria — status
@@ -34,9 +34,9 @@ make test          # backend pytest + Rego → 44 + 25 passed
 | Agent telemetry visible | Partial–Met | `GET /analytics/events` + dashboard turns/tool calls; not yet surfaced in the frontend |
 | All endpoints enforce authn/authz | Met | default-deny OPA + guards; policy matrix 25 cases |
 | Audit logs capture key actions | Met | `AnalyticsEvent` + JSON structured logs with correlation IDs |
-| No critical vulns in standard scan | GAP | No scanning CI step yet (§15.8/SCA deferred); see threat model gaps |
-| Lint/format/typecheck pass in CI | Met | `.github/workflows/ci.yml` runs ruff, mypy, tests, Rego, Vite build |
-| Min test coverage thresholds | Partial | Suites exist (44 backend + 25 policy); numeric coverage-gate not enforced in CI |
+| No critical vulns in standard scan | GAP | SCA deferred (§15.8); run `make scan` locally; see threat model gaps |
+| Lint/format/typecheck pass locally | Met | `make lint` / `make typecheck` / `make test` + frontend `npm run build` |
+| Min test coverage thresholds | Partial | Suites exist (44 backend + 25 policy); numeric coverage-gate not enforced |
 | UI component library + a11y baseline | Partial | MUI component library in use; WCAG AA pass not yet completed (deferred) |
 | Dark/light theme toggle | GAP | Deferred to P2 (single light theme implemented) |
 
@@ -51,7 +51,7 @@ make test          # backend pytest + Rego → 44 + 25 passed
 | Sim workflow: scenario → authorized A2A/MCP → cited case study | Met | `test_simulations.py` (completes → case study with citations) |
 | Policy-denied requests blocked and logged | Met | OPA reason codes + audit; policy matrix 100% pass |
 | Unauthorized MCP calls never reach the tool | Met | Default-deny `mcp.rego` gate verified via policy tests |
-| Eval/security/accessibility reproducible locally + CI | Partial | `make eval` local (DeepEval + promptfoo + Rego); CI runs Rego + pytest + build; security/a11y suites deferred |
+| Eval/security/accessibility reproducible locally | Partial | `make eval` (DeepEval + promptfoo + Rego); security/a11y suites deferred |
 | Clear non-advice disclosure at decision points | Met | Disclaimers on simulations, reviews, case studies, exports; abstention language in prompts |
 
 ## Workflow smoke run (both primary flows)

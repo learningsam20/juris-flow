@@ -254,10 +254,11 @@ def synthesize(
     voice_overrides: dict[str, str] = {**voice_map, **(voices or {})}
     key = role_for_voice(role)
     prosody = ROLE_PROSODY.get(key, {"rate": "+0%", "pitch": "+0Hz"})
+    spoken = text.strip()
     if provider == "edge":
         try:
             return _synthesize_edge(
-                text,
+                spoken,
                 _edge_voice(role, voice_overrides),
                 rate=prosody.get("rate", "+0%"),
                 pitch=prosody.get("pitch", "+0Hz"),
@@ -266,11 +267,11 @@ def synthesize(
             if shutil.which("say") is not None:
                 logger.warning("edge-tts failed (%s), falling back to macOS say", exc)
                 return _synthesize_macos(
-                    text, _macos_voice(role, voice_overrides), target_format="mp3"
+                    spoken, _macos_voice(role, voice_overrides), target_format="mp3"
                 )
             raise
     if provider == "macos":
-        return _synthesize_macos(text, _macos_voice(role, voice_overrides))
+        return _synthesize_macos(spoken, _macos_voice(role, voice_overrides))
     raise TTSError(f"unsupported tts provider {provider!r}")
 
 

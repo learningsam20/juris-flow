@@ -14,6 +14,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import threading
 import time
 import uuid
 from datetime import datetime, timezone
@@ -27,6 +28,92 @@ from app.models.simulation import Simulation, SimulationAudio, SimulationTurn
 from app.services import tts as tts_service
 
 logger = logging.getLogger(__name__)
+
+# One synthesis job at a time per simulation — concurrent runs delete each
+# other's pending ORM rows and blow up on commit ("Instance has been deleted").
+_GENERATE_LOCKS: dict[str, threading.Lock] = {}
+_GENERATE_LOCKS_GUARD = threading.Lock()
+# Avoid thrashing re-enqueue when the UI polls a dead pending job.
+_STALE_REQUEUE_AT: dict[str, float] = {}
+
+
+def _lock_for_sim(simulation_id: str) -> threading.Lock:
+    with _GENERATE_LOCKS_GUARD:
+        lock = _GENERATE_LOCKS.get(simulation_id)
+        if lock is None:
+            lock = threading.Lock()
+            _GENERATE_LOCKS[simulation_id] = lock
+        return lock
+
+
+def is_generating(simulation_id: str) -> bool:
+    """True while this process holds the per-sim synthesis lock."""
+    with _GENERATE_LOCKS_GUARD:
+        lock = _GENERATE_LOCKS.get(simulation_id)
+    return bool(lock and lock.locked())
+
+
+def _ensure_generation_running(
+    *, simulation_id: str, organization_id: str, db: Session, rows: list[SimulationAudio]
+) -> None:
+    """If pending rows exist with no files and no live worker, re-queue synthesis.
+
+    Auto-enqueue after sim completion uses an in-process daemon thread. Uvicorn
+    ``--reload`` (and process restarts) kill that worker while leaving ``pending``
+    rows forever — refresh then looked stuck.
+    """
+    if not rows:
+        return
+    if any(r.status == "ready" for r in rows):
+        return
+    if not all(r.status == "pending" for r in rows):
+        return
+    if is_generating(simulation_id):
+        return
+
+    sim_dir = tts_service.ensure_data_dir() / simulation_id
+    has_files = sim_dir.exists() and any(
+        (sim_dir / name).exists()
+        for name in ("case-overview.mp3", "argument-discussion.mp3")
+    )
+    if has_files:
+        return
+
+    now = time.time()
+    last = _STALE_REQUEUE_AT.get(simulation_id, 0.0)
+    if now - last < 20.0:
+        for r in rows:
+            if r.status == "pending" and not (r.error or "").strip():
+                r.error = "Waiting for synthesizer to start…"
+                r.estimated_tokens = max(1, r.estimated_tokens or 1)
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+        return
+
+    _STALE_REQUEUE_AT[simulation_id] = now
+    for r in rows:
+        if r.status == "pending":
+            r.error = "Restarting synthesis (previous job was interrupted)…"
+            r.estimated_tokens = 2
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+
+    try:
+        from app.queue import enqueue
+
+        enqueue(generate_assets_job, simulation_id, organization_id)
+        logger.info(
+            "re-queued stale audio synthesis for simulation %s", simulation_id
+        )
+    except Exception:
+        logger.exception(
+            "failed to re-queue stale audio synthesis for %s", simulation_id
+        )
+
 
 
 def utcnow() -> datetime:
@@ -242,15 +329,12 @@ def adapt_to_live_courtroom_speech(
 
 
 def extract_case_overview_text(sim: Simulation, db: Session) -> str:
-    """Extract a complete, comprehensive, articulate spoken case overview and executive summary.
+    """Build a spoken case overview via LLM — scoped for narration, never truncated.
 
-    Synthesizes the complete factual record, legal controversy, contested positions of both parties,
-    the tribunal's analysis, full judicial determination, holding, and legal principles.
-    Completely avoids arbitrary snippet truncations so the narrator provides a full,
-    exhaustive briefing of the matter.
+    The LLM is instructed to produce a complete oral briefing (facts, issues,
+    parties' positions, holding) sized for about 2–4 minutes of speech. Falls
+    back to a structured deterministic overview if the LLM is unavailable.
     """
-    parts: list[str] = []
-
     sv = (
         db.query(ScenarioVersion)
         .filter(ScenarioVersion.id == sim.scenario_version_id)
@@ -262,105 +346,102 @@ def extract_case_overview_text(sim: Simulation, db: Session) -> str:
         scenario.jurisdiction if scenario and scenario.jurisdiction else ""
     ).strip()
     domain = (scenario.domain if scenario and scenario.domain else "").strip()
-
-    meta_desc = f"Comprehensive Executive Case Overview for: {title}."
-    if jurisdiction or domain:
-        meta_desc += f" Jurisdiction: {jurisdiction or 'General'}. Legal Domain: {domain or 'Dispute Resolution'}."
-    parts.append(meta_desc)
-
+    fact_pattern = (sv.fact_pattern if sv else "") or ""
     cs = getattr(sim, "case_study", None)
-    if cs and cs.markdown_content:
-        content = cs.markdown_content
+    case_md = (cs.markdown_content if cs else "") or ""
+    verdict = (sim.state or {}).get("verdict") or {}
+    winner = (
+        verdict.get("winner", "") if isinstance(verdict, dict) else ""
+    ) or ""
+    rationale = (
+        verdict.get("rationale", "") if isinstance(verdict, dict) else ""
+    ) or ""
 
-        # 1. Facts
-        m_facts = re.search(
-            r"##\s*Facts\s*\n+(.*?)(?=\n*##|\Z)",
-            content,
-            flags=re.DOTALL | re.IGNORECASE,
-        )
-        if m_facts and m_facts.group(1).strip():
-            facts_text = clean_speech_text(m_facts.group(1).strip(), is_turn=False)
-            if facts_text and not facts_text.startswith("_No fact"):
-                parts.append(f"Factual Record and Background: {facts_text}")
-        elif sv and sv.fact_pattern:
-            facts_text = clean_speech_text(sv.fact_pattern, is_turn=False)
-            parts.append(f"Factual Record and Background: {facts_text}")
-
-        # 2. Issues
-        m_issues = re.search(
-            r"##\s*Issues\s*\n+(.*?)(?=\n*##|\Z)",
-            content,
-            flags=re.DOTALL | re.IGNORECASE,
-        )
-        if m_issues and m_issues.group(1).strip():
-            issues_text = clean_speech_text(m_issues.group(1).strip(), is_turn=False)
-            issues_text = re.sub(
-                r"(?i)^here are the principal.*?:", "", issues_text
-            ).strip()
-            parts.append(
-                f"Principal Legal Questions and Issues in Dispute: {issues_text}"
+    turns = (
+        db.query(SimulationTurn)
+        .filter(SimulationTurn.simulation_id == sim.id)
+        .order_by(SimulationTurn.turn_number)
+        .all()
+    )
+    transcript_bits: list[str] = []
+    for t in turns[:12]:
+        spoken = clean_speech_text(t.text or "", is_turn=True)
+        if spoken:
+            transcript_bits.append(
+                f"{(t.agent_role or 'party').title()} ({t.phase or 'hearing'}): {spoken}"
             )
+    transcript = "\n\n".join(transcript_bits)
 
-        # 3. Summary
-        m_summary = re.search(
-            r"##\s*Summary\s*\n+(.*?)(?=\n*##|\Z)",
-            content,
-            flags=re.DOTALL | re.IGNORECASE,
+    source_pack = "\n\n".join(
+        part
+        for part in (
+            f"Title: {title}",
+            f"Jurisdiction: {jurisdiction or 'unspecified'}",
+            f"Domain: {domain or 'unspecified'}",
+            f"Fact pattern:\n{fact_pattern}" if fact_pattern else "",
+            f"Case study markdown:\n{case_md}" if case_md else "",
+            f"Tribunal winner: {winner}" if winner else "",
+            f"Rationale: {rationale}" if rationale else "",
+            f"Hearing transcript excerpts:\n{transcript}" if transcript else "",
         )
-        if m_summary and m_summary.group(1).strip():
-            summary_body = m_summary.group(1).strip()
-            summary_clean = clean_speech_text(summary_body, is_turn=False)
-            summary_clean = re.sub(
-                r"(?i)^here is a.*?(?:\n+|$)", "", summary_clean
-            ).strip()
-            parts.append(f"Executive Summary of Dispute: {summary_clean}")
+        if part
+    )
 
-        # 4. Full Outcome & Reasoning (complete without truncation)
-        m_outcome = re.search(
-            r"##\s*Outcome\s*&\s*Reasoning\s*\n+(.*?)(?=\n*##|\Z)",
-            content,
-            flags=re.DOTALL | re.IGNORECASE,
-        )
-        if m_outcome and m_outcome.group(1).strip():
-            outcome_body = m_outcome.group(1).strip()
-            outcome_clean = clean_speech_text(outcome_body, is_turn=False)
-            parts.append(f"Tribunal Outcome and Judicial Reasoning: {outcome_clean}")
+    system = (
+        "You write spoken narration for a legal-education tribunal replay. "
+        "Output plain prose only — no markdown, no bullet symbols, no headings, "
+        "no stage directions. Write complete sentences a narrator can read aloud."
+    )
+    user = (
+        "Compose a complete Case Overview & Executive Summary for audio narration.\n"
+        "Cover, in order: (1) case identity and jurisdiction, (2) material facts, "
+        "(3) principal legal issues, (4) each side's core position, "
+        "(5) the tribunal's determination and reasoning.\n"
+        "Write a full oral briefing a narrator can read aloud end-to-end. "
+        "Do not omit the holding. Finish every sentence. No markdown.\n"
+        "Educational and informational. Not legal advice.\n\n"
+        f"SOURCE MATERIALS:\n{source_pack}"
+    )
 
-        # 5. Legal Principles
-        m_principles = re.search(
-            r"##\s*Legal\s*Principles\s*Highlighted\s*\n+(.*?)(?=\n*##|\Z)",
-            content,
-            flags=re.DOTALL | re.IGNORECASE,
-        )
-        if m_principles and m_principles.group(1).strip():
-            principles_clean = clean_speech_text(
-                m_principles.group(1).strip(), is_turn=False
-            )
-            principles_clean = re.sub(
-                r"(?i)^here are.*?:", "", principles_clean
-            ).strip()
-            parts.append(f"Key Legal Principles Highlighted: {principles_clean}")
-    else:
-        if sv and sv.fact_pattern:
-            parts.append(
-                f"Dispute Background: {clean_speech_text(sv.fact_pattern, is_turn=False)}"
-            )
-        verdict = (sim.state or {}).get("verdict") or {}
-        winner = (
-            verdict.get("winner", "unspecified")
-            if isinstance(verdict, dict)
-            else "unspecified"
-        )
-        rationale = verdict.get("rationale", "") if isinstance(verdict, dict) else ""
-        parts.append(f"Final Tribunal Verdict: Winner is {winner.upper()}.")
-        if rationale:
-            parts.append(
-                f"Judicial Determination Rationale: {clean_speech_text(rationale, is_turn=False)}"
-            )
+    try:
+        from app.llm.factory import get_llm
 
-    parts.append("This concludes the executive case overview briefing.")
-    full_text = " ".join(parts)
-    return clean_speech_text(full_text, is_turn=False)
+        llm = get_llm()
+        raw = llm.chat(system, [{"role": "user", "content": user}])
+        spoken = clean_speech_text(raw or "", is_turn=False)
+        if len(spoken) >= 120:
+            return spoken
+        logger.warning(
+            "LLM overview too short (%s chars); using deterministic fallback",
+            len(spoken),
+        )
+    except Exception:
+        logger.exception("LLM case overview generation failed; using fallback")
+
+    # Deterministic fallback — full content, no artificial clipping.
+    parts: list[str] = [
+        f"This is the case overview for {title}."
+    ]
+    if jurisdiction or domain:
+        parts.append(
+            f"The matter arises in {jurisdiction or 'a general'} jurisdiction "
+            f"within the {domain or 'dispute resolution'} domain."
+        )
+    if fact_pattern:
+        parts.append(
+            f"The factual background is as follows. {clean_speech_text(fact_pattern, is_turn=False)}"
+        )
+    if winner:
+        parts.append(f"The tribunal determined that the winner is {winner}.")
+    if rationale:
+        parts.append(
+            f"The reasoning was as follows. {clean_speech_text(rationale, is_turn=False)}"
+        )
+    if case_md and not fact_pattern:
+        parts.append(clean_speech_text(case_md, is_turn=False))
+    parts.append("This concludes the case overview briefing.")
+    return clean_speech_text(" ".join(parts), is_turn=False)
+
 
 
 def _concat_audio_files(input_paths: list[Path], output_path: Path) -> Path:
@@ -497,6 +578,37 @@ def generate_assets(
     1. Case Overview & Summary (narrator voice)
     2. Case Argument Discussion (multi-voice hearing with distinct role voices)
     """
+    with _lock_for_sim(simulation_id):
+        return _generate_assets_locked(
+            simulation_id=simulation_id, organization_id=organization_id, db=db
+        )
+
+
+def _set_audio_progress(
+    db: Session, row: SimulationAudio | None, message: str, pct: int = 0
+) -> None:
+    """Publish progress on a pending audio row (reuses error/estimated_tokens while pending)."""
+    if row is None:
+        return
+    try:
+        row.error = message
+        row.estimated_tokens = max(0, min(100, int(pct)))
+        db.commit()
+    except Exception:
+        db.rollback()
+        logger.debug("audio progress update skipped", exc_info=True)
+
+
+def _generate_assets_locked(
+    *,
+    simulation_id: str,
+    organization_id: str,
+    db: Session,
+) -> list[SimulationAudio]:
+    """Generate the 2 official simulation audios:
+    1. Case Overview & Summary (narrator voice)
+    2. Case Argument Discussion (multi-voice hearing with distinct role voices)
+    """
     sim, turns = _load(simulation_id, organization_id=organization_id, db=db)
 
     # Clean up previous audio rows for this simulation so only the 2 official assets exist
@@ -505,24 +617,83 @@ def generate_assets(
     ).delete()
     db.commit()
 
+    # Persist pending placeholders immediately so the UI can show progress.
+    pending_overview = SimulationAudio(
+        id=uuid.uuid4().hex,
+        simulation_id=simulation_id,
+        organization_id=organization_id,
+        kind="learning",
+        agent_role="narrator",
+        turn_number=0,
+        file_name="",
+        format=tts_service.file_extension(),
+        size_bytes=0,
+        status="pending",
+        error="Queued — drafting case overview script…",
+        estimated_tokens=5,
+        generated_at=None,
+    )
+    pending_discussion = SimulationAudio(
+        id=uuid.uuid4().hex,
+        simulation_id=simulation_id,
+        organization_id=organization_id,
+        kind="discussion",
+        agent_role="multi_voice",
+        turn_number=1,
+        file_name="",
+        format=tts_service.file_extension(),
+        size_bytes=0,
+        status="pending",
+        error="Queued — waiting for overview to finish…",
+        estimated_tokens=0,
+        generated_at=None,
+    )
+    db.add(pending_overview)
+    db.add(pending_discussion)
+    db.commit()
+
     rows: list[SimulationAudio] = []
 
     # -----------------------------------------------------------------------
     # 1. Case Overview & Summary (Judicial Narrator)
     # -----------------------------------------------------------------------
+    _set_audio_progress(
+        db, pending_overview, "1/2 Drafting case overview narration (LLM)…", 15
+    )
     overview_text = extract_case_overview_text(sim, db)
     if overview_text.strip():
-        overview_row = _write_single_asset(
-            db,
-            simulation_id=simulation_id,
-            organization_id=organization_id,
-            kind="learning",
-            agent_role="narrator",
-            turn_number=0,
-            text=overview_text,
-            asset_name="case-overview",
-        )
-        rows.append(overview_row)
+        try:
+            _set_audio_progress(
+                db,
+                pending_overview,
+                "1/2 Synthesizing case overview voice (edge-tts)…",
+                35,
+            )
+            t0 = time.monotonic()
+            data = tts_service.synthesize(overview_text, role="narrator")
+            path = tts_service.write_audio_file(
+                simulation_id=simulation_id,
+                asset_name="case-overview",
+                data=data,
+            )
+            pending_overview.file_name = path.name
+            pending_overview.size_bytes = path.stat().st_size
+            pending_overview.status = "ready"
+            pending_overview.duration_ms = int((time.monotonic() - t0) * 1000)
+            pending_overview.estimated_tokens = max(1, len(overview_text) // 4)
+            pending_overview.generated_at = utcnow()
+            pending_overview.error = ""
+            db.commit()
+            rows.append(pending_overview)
+        except Exception as exc:
+            pending_overview.status = "error"
+            pending_overview.error = str(exc)
+            db.commit()
+            logger.exception("case overview TTS failed for %s", simulation_id)
+    else:
+        pending_overview.status = "error"
+        pending_overview.error = "No overview text available"
+        db.commit()
 
     # -----------------------------------------------------------------------
     # 2. Case Argument Discussion (Live Multi-Voice Courtroom Proceeding)
@@ -545,8 +716,21 @@ def generate_assets(
         case_title = sv.title if sv and sv.title else "Simulated Legal Dispute"
 
         total_turns = len(spoken_turns)
+        _set_audio_progress(
+            db,
+            pending_discussion,
+            f"2/2 Synthesizing courtroom turns (0/{total_turns})…",
+            45,
+        )
         for idx, (turn, cleaned_text) in enumerate(spoken_turns):
             role = turn.agent_role or "orchestrator"
+            pct = 45 + int(50 * (idx / max(1, total_turns)))
+            _set_audio_progress(
+                db,
+                pending_discussion,
+                f"2/2 Synthesizing turn {idx + 1}/{total_turns} ({role})…",
+                pct,
+            )
             # Adapt the clean turn dialogue into an authentic, dramatic live courtroom oral argument!
             dramatized_speech = adapt_to_live_courtroom_speech(
                 role,
@@ -586,6 +770,10 @@ def generate_assets(
             target_file_name = f"argument-discussion.{ext}"
             discussion_path = (
                 tts_service.ensure_data_dir() / simulation_id / target_file_name
+            )
+
+            _set_audio_progress(
+                db, pending_discussion, "2/2 Concatenating multi-voice hearing…", 95
             )
 
             # Generate natural 0.5s pause between speaker turns
@@ -628,6 +816,12 @@ def generate_assets(
             try:
                 _concat_audio_files(concat_sequence, discussion_path)
 
+                # Always upsert a fresh ready row — pending placeholders may have
+                # been deleted by a superseded job / session expiry.
+                db.query(SimulationAudio).filter(
+                    SimulationAudio.simulation_id == simulation_id,
+                    SimulationAudio.kind == "discussion",
+                ).delete()
                 discussion_row = SimulationAudio(
                     id=uuid.uuid4().hex,
                     simulation_id=simulation_id,
@@ -654,11 +848,41 @@ def generate_assets(
 
                 if not sys.is_finalizing():
                     logger.error("Failed to concatenate discussion audio: %s", exc)
+                try:
+                    pending_discussion.status = "error"
+                    pending_discussion.error = str(exc)
+                    db.commit()
+                except Exception:
+                    db.rollback()
+                    err_row = SimulationAudio(
+                        id=uuid.uuid4().hex,
+                        simulation_id=simulation_id,
+                        organization_id=organization_id,
+                        kind="discussion",
+                        agent_role="multi_voice",
+                        turn_number=1,
+                        file_name="",
+                        format=ext if "ext" in locals() else tts_service.file_extension(),
+                        size_bytes=0,
+                        status="error",
+                        error=str(exc),
+                        generated_at=None,
+                    )
+                    db.add(err_row)
+                    db.commit()
             finally:
                 # Clean up intermediate turn files & pause file
                 for tp in temp_turn_paths:
                     tp.unlink(missing_ok=True)
                 pause_path.unlink(missing_ok=True)
+        else:
+            pending_discussion.status = "error"
+            pending_discussion.error = "No turn audio segments could be synthesized"
+            db.commit()
+    else:
+        pending_discussion.status = "error"
+        pending_discussion.error = "No spoken turns available"
+        db.commit()
 
     return rows
 
@@ -694,6 +918,11 @@ def list_assets(
 
         added = False
         if overview_file.exists() and "case-overview.mp3" not in existing_files:
+            # Drop stale pending placeholder for this kind
+            for r in list(rows):
+                if r.kind in ("learning", "overview", "run") and r.status == "pending":
+                    db.delete(r)
+                    rows.remove(r)
             o_row = SimulationAudio(
                 id=uuid.uuid4().hex,
                 simulation_id=simulation_id,
@@ -715,6 +944,10 @@ def list_assets(
             added = True
 
         if discussion_file.exists() and "argument-discussion.mp3" not in existing_files:
+            for r in list(rows):
+                if r.kind == "discussion" and r.status == "pending":
+                    db.delete(r)
+                    rows.remove(r)
             d_row = SimulationAudio(
                 id=uuid.uuid4().hex,
                 simulation_id=simulation_id,
@@ -741,6 +974,20 @@ def list_assets(
             except Exception:
                 db.rollback()
 
+    # Dead pending with no worker and no files → restart synthesis.
+    _ensure_generation_running(
+        simulation_id=simulation_id,
+        organization_id=organization_id,
+        db=db,
+        rows=rows,
+    )
+    # Re-read after possible requeue status updates
+    rows = (
+        db.query(SimulationAudio)
+        .filter(SimulationAudio.simulation_id == simulation_id)
+        .order_by(SimulationAudio.turn_number, SimulationAudio.kind)
+        .all()
+    )
     return rows
 
 
@@ -756,6 +1003,8 @@ def asset_dict(row: SimulationAudio) -> dict:
         if is_overview
         else "Immersive live tribunal proceeding featuring courtroom opening announcements, rhetorical advocate arguments, and commanding bench rulings."
     )
+    pending = row.status == "pending"
+    progress = (row.error or "").strip() if pending else ""
     return {
         "id": row.id,
         "simulation_id": row.simulation_id,
@@ -766,7 +1015,9 @@ def asset_dict(row: SimulationAudio) -> dict:
         "format": row.format,
         "size_bytes": row.size_bytes,
         "status": row.status,
-        "error": row.error,
+        "error": "" if pending else (row.error or ""),
+        "progress": progress,
+        "progress_pct": int(row.estimated_tokens or 0) if pending else None,
         "duration_ms": row.duration_ms,
         "estimated_tokens": row.estimated_tokens,
         "title": title,
